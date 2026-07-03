@@ -7,4 +7,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+    base: '/',
+  server: {
+    port: 3000,
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+  },
 })
