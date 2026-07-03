@@ -17,7 +17,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
  * - خطاهای HTTP را throw می‌کند
  */
 async function request(endpoint, options = {}) {
-  const url = `${BASE_URL}${endpoint}`;
+  const url = `${API_BASE_URL}${endpoint}`;
 
   const config = {
     credentials: "include", // ✅ برای ارسال cookie JWT
