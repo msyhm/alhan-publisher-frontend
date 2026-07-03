@@ -2,17 +2,24 @@
   command = "npm run build"
   publish = "dist"
 
+# ✅ پروکسی درخواست‌های API به بک‌اند Railway
+# از دید مرورگر، این درخواست‌ها هم‌دامنه (same-origin) به نظر می‌رسند
+# چون از همون آدرس netlify.app ارسال می‌شوند — بنابراین مشکل کوکی cross-site حل می‌شود
+[[redirects]]
+  from = "/api/*"
+  to = "https://alhan-publisher-backend-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
+# ✅ برای فایل‌های آپلودشده (تصاویر و ...) که از /uploads سرو می‌شوند
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://alhan-publisher-backend-production.up.railway.app/uploads/:splat"
+  status = 200
+  force = true
+
+# ✅ SPA fallback — همه مسیرهای دیگر به index.html بروند (برای react-router)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    Content-Type = "text/css"
