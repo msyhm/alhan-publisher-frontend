@@ -1,0 +1,18 @@
+# robots.txt — انتشارات الحان
+# https://alhanpublish.ir
+
+User-agent: *
+Allow: /
+
+# صفحات ادمین — محرمانه
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/books
+Disallow: /admin/messages
+Disallow: /admin/submissions
+Disallow: /admin/settings
+Disallow: /admin/users
+Disallow: /admin/reports
+
+# فایل sitemap
+Sitemap: https://alhanpublish.ir/sitemap.xml

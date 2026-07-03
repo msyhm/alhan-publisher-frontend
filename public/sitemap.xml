@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ─── صفحات ثابت ─────────────────────────────────────────────── -->
+
+  <url>
+    <loc>https://alhanpublish.ir/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://alhanpublish.ir/books</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://alhanpublish.ir/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://alhanpublish.ir/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://alhanpublish.ir/submit-book</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!--
+    ─── صفحات داینامیک کتاب‌ها ─────────────────────────────────────
+    چون داده‌ها در localStorage هستند، sitemap استاتیک است.
+    پس از انتقال به بکند، این بخش را با script تولید کنید:
+
+    books.forEach(book => {
+      sitemap += `
+      <url>
+        <loc>https://alhanpublish.ir/books/${book.id}</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+      </url>`;
+    });
+
+    فعلاً نمونه کتاب پیش‌فرض:
+  -->
+  <url>
+    <loc>https://alhanpublish.ir/books/1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
