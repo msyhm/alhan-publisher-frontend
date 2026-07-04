@@ -14,7 +14,7 @@ function useAuthors() {
       try {
         setLoading(true);
         const data = await authorsService.getAll();
-        if (!cancelled) setAuthorsState(data);
+        if (!cancelled) setAuthorsState(Array.isArray(data?.authors) ? data.authors : []);
       } catch (err) {
         if (!cancelled) setError(err.message || "خطا در دریافت نویسندگان");
       } finally {

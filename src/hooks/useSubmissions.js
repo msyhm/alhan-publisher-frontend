@@ -12,7 +12,7 @@ function useSubmissions() {
       try {
         setLoading(true);
         const data = await submissionsService.getAll();
-        if (!cancelled) setSubmissionsState(data);
+        if (!cancelled) setSubmissionsState(Array.isArray(data?.submissions) ? data.submissions : []);
       } catch (err) {
         if (!cancelled) setError(err.message || "خطا در دریافت آثار ارسالی");
       } finally {

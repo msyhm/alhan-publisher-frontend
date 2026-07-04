@@ -12,7 +12,7 @@ function useMessages() {
       try {
         setLoading(true);
         const data = await messagesService.getAll();
-        if (!cancelled) setMessagesState(data);
+        if (!cancelled) setMessagesState(Array.isArray(data?.messages) ? data.messages : []);
       } catch (err) {
         if (!cancelled) setError(err.message || "خطا در دریافت پیام‌ها");
       } finally {

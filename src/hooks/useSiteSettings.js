@@ -60,7 +60,7 @@ function useSiteSettings() {
       try {
         setLoading(true);
         const data = await settingsService.getSettings(DEFAULT_SETTINGS);
-        if (!cancelled) setSettingsState(data);
+        if (!cancelled) setSettingsState(data && typeof data === 'object' ? data : DEFAULT_SETTINGS);
       } catch (err) {
         if (!cancelled) setError(err.message || "خطا در دریافت تنظیمات");
       } finally {

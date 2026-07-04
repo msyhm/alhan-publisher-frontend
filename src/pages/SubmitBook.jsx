@@ -1,7 +1,7 @@
 import PageMeta from "../components/PageMeta";
 import Icon from "../components/ui/Icon";
 import { useState, useRef } from "react";
-import useSubmissions from "../hooks/useSubmissions";
+import submissionsService from "../services/submissionsService";
 import { toast } from "react-hot-toast";
 
 const INPUT_CLS = "w-full border-2 border-primary-light/30 rounded-xl p-3.5 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all bg-white";
@@ -146,19 +146,18 @@ function FileUploader({ file, onChange }) {
 
 // ─── صفحه اصلی ─────────────────────────────────────────────────────────────
 function SubmitBook() {
-  const { submissions, setSubmissions } = useSubmissions();
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [submissionId, setSubmissionId] = useState(null);
+  const [trackingCode, setTrackingCode] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.agreeTerms) {
@@ -168,37 +167,41 @@ function SubmitBook() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const newSubmission = {
-        id: Date.now(),
-        ...formData,
-        // ✅ اطلاعات فایل آپلود‌شده (نه محتوا — فقط متادیتا)
-        fileName:     uploadedFile?.name     || null,
-        fileSize:     uploadedFile?.size     || null,
-        fileType:     uploadedFile?.type     || null,
-        hasFile:      !!uploadedFile,
-        status:       "در انتظار بررسی",
-        submittedAt:  new Date().toISOString(),
-        trackingCode: `AL-${String(Date.now()).slice(-6)}`,
-      };
+    try {
+      // ✅ ارسال واقعی به بک‌اند (endpoint عمومی — نیاز به لاگین ندارد)
+      const { fullName, email, phone, title, category, summary, description, hasPublished } = formData;
+      const result = await submissionsService.create({
+        fullName, email, phone, title, category, summary, description, hasPublished,
+      });
 
-      setSubmissions([...submissions, newSubmission]);
-      setSubmissionId(newSubmission.id);
+      // ✅ اگر فایلی انتخاب شده، حالا که id اثر را داریم آن را آپلود کن
+      if (uploadedFile && result?.id) {
+        try {
+          await submissionsService.uploadFile(result.id, uploadedFile);
+        } catch (uploadErr) {
+          toast.error("اثر ثبت شد، ولی آپلود فایل با خطا مواجه شد. لطفاً بعداً با پشتیبانی تماس بگیرید.");
+        }
+      }
+
+      setTrackingCode(result?.trackingCode || null);
       setSubmitted(true);
-      setIsSubmitting(false);
       toast.success("اثر شما با موفقیت ثبت شد!");
-    }, 1500);
+    } catch (err) {
+      toast.error(err.message || "خطا در ثبت اثر. لطفاً دوباره تلاش کنید");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setSubmitted(false);
     setFormData(EMPTY_FORM);
     setUploadedFile(null);
+    setTrackingCode(null);
   };
 
   // ─── صفحه موفقیت ────────────────────────────────────────────────────────
   if (submitted) {
-    const trackingCode = submissions.find((s) => s.id === submissionId)?.trackingCode || "AL-000000";
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 pt-28">
         <div className="bg-white rounded-3xl shadow-elegant p-10 sm:p-14 text-center animate-fade-scale">

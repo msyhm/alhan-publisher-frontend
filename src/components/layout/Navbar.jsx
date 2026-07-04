@@ -1,10 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useBooks from "../../hooks/useBooks";
-import useMessages from "../../hooks/useMessages";
 import Icon from "../ui/Icon";
-// ✅ بررسی وضعیت لاگین ادمین برای نمایش badge
-import { isAdminAuthenticated } from "../ProtectedRoute";
 
 const links = [
   { to: "/",            label: "خانه",       icon: "home"   },
@@ -23,8 +20,6 @@ function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { books } = useBooks();
-  const { unreadCount } = useMessages();
-  const isAdmin = isAdminAuthenticated();
   const navigate = useNavigate();
   const location = useLocation();
   const desktopSearchRef = useRef(null);
@@ -222,12 +217,6 @@ function Navbar() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              {/* ✅ badge پیام‌های نخوانده — فقط برای ادمین لاگین‌کرده */}
-              {isAdmin && unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow border-2 border-white">
-                  {unreadCount > 99 ? "۹۹+" : unreadCount}
-                </span>
-              )}
             </Link>
           </div>
         </div>
@@ -286,12 +275,6 @@ function Navbar() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            {/* ✅ badge موبایل */}
-            {isAdmin && unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                {unreadCount > 99 ? "۹۹+" : unreadCount}
-              </span>
-            )}
           </Link>
         </div>
       </div>
@@ -348,26 +331,6 @@ function Navbar() {
               {link.label}
             </Link>
           ))}
-          {/* ✅ لینک ادمین با badge در منوی کشویی موبایل */}
-          {isAdmin && (
-            <Link
-              to="/admin"
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-between px-4 py-3 rounded-xl transition-all text-text-secondary hover:bg-primary-bg/50 hover:text-primary"
-            >
-              <div className="flex items-center gap-3">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                پنل مدیریت
-              </div>
-              {unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {unreadCount} پیام جدید
-                </span>
-              )}
-            </Link>
-          )}
         </div>
       </div>
     </nav>

@@ -17,7 +17,7 @@ function useBooks() {
       try {
         setLoading(true);
         const data = await booksService.getAll();
-        if (!cancelled) setBooksState(data);
+        if (!cancelled) setBooksState(Array.isArray(data?.books) ? data.books : []);
       } catch (err) {
         if (!cancelled) setError(err.message || "خطا در دریافت کتاب‌ها");
       } finally {

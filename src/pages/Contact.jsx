@@ -1,11 +1,10 @@
 import PageMeta from "../components/PageMeta";
 import Icon from "../components/ui/Icon";
 import { useState } from "react";
-import useMessages from "../hooks/useMessages";
+import messagesService from "../services/messagesService";
 import { toast } from "react-hot-toast";
 
 function Contact() {
-  const { messages, setMessages } = useMessages();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,24 +19,21 @@ function Contact() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // شبیه‌سازی ارسال
-    setTimeout(() => {
-      const newMessage = {
-        id: Date.now(),
-        ...formData,
-        sentAt: new Date().toISOString(),
-        isRead: false,
-      };
-      setMessages([...messages, newMessage]);
+    try {
+      // ✅ ارسال واقعی به بک‌اند (endpoint عمومی — نیاز به لاگین ندارد)
+      await messagesService.create(formData);
       setSent(true);
-      setIsSubmitting(false);
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
       toast.success("پیام شما با موفقیت ارسال شد!");
-    }, 1000);
+    } catch (err) {
+      toast.error(err.message || "خطا در ارسال پیام. لطفاً دوباره تلاش کنید");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
