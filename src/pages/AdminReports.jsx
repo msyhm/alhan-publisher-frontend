@@ -188,7 +188,7 @@ function AdminReports() {
     return authors
       .map((a) => ({
         name: a.name,
-        count: books.filter((b) => b.author === a.name).length,
+        count: books.filter((b) => b.authorName === a.name).length,
         field: a.field || "—",
       }))
       .filter((a) => a.count > 0)

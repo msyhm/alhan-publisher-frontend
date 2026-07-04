@@ -90,7 +90,7 @@ function Books() {
       const matchSearch =
         !search.trim() ||
         book.title.includes(search) ||
-        (book.author && book.author.includes(search)) ||
+        (book.authorName && book.authorName.includes(search)) ||
         (book.category && book.category.includes(search)) ||
         (book.isbn && book.isbn.includes(search));
 
@@ -127,7 +127,7 @@ function Books() {
       case "newest":     result.sort((a, b) => (b.year  || 0) - (a.year  || 0)); break;
       case "oldest":     result.sort((a, b) => (a.year  || 0) - (b.year  || 0)); break;
       case "title":      result.sort((a, b) => a.title.localeCompare(b.title));   break;
-      case "author":     result.sort((a, b) => (a.author||"").localeCompare(b.author||"")); break;
+      case "author":     result.sort((a, b) => (a.authorName||"").localeCompare(b.authorName||"")); break;
       case "pages":      result.sort((a, b) => (b.pages || 0) - (a.pages || 0)); break;
       case "price_asc":  result.sort((a, b) => (Number(a.price)||0) - (Number(b.price)||0)); break;
       case "price_desc": result.sort((a, b) => (Number(b.price)||0) - (Number(a.price)||0)); break;

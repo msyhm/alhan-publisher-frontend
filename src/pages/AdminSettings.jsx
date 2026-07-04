@@ -307,7 +307,7 @@ function AdminSettings() {
 
                           <div className="min-w-0">
                             <p className="font-medium text-primary text-sm truncate">{book.title}</p>
-                            <p className="text-xs text-text-muted mt-0.5 truncate">{book.author}</p>
+                            <p className="text-xs text-text-muted mt-0.5 truncate">{book.authorName}</p>
                             {book.category && (
                               <span className="inline-block mt-1 text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
                                 {book.category}

@@ -4,7 +4,7 @@ import useBooks from "../hooks/useBooks";
 import { toast } from "react-hot-toast";
 
 function AdminBooks() {
-  const { books, setBooks } = useBooks();
+  const { books, removeBook } = useBooks();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -15,7 +15,7 @@ function AdminBooks() {
     return books.filter(
       (book) =>
         book.title.includes(search) ||
-        book.author.includes(search) ||
+        (book.authorName || "").includes(search) ||
         (book.category && book.category.includes(search))
     );
   }, [books, search]);
@@ -27,11 +27,14 @@ function AdminBooks() {
     return filteredBooks.slice(start, start + itemsPerPage);
   }, [filteredBooks, currentPage]);
 
-  const deleteBook = (id, title) => {
+  const deleteBook = async (id, title) => {
     if (window.confirm(`آیا از حذف کتاب "${title}" اطمینان دارید؟`)) {
-      const updatedBooks = books.filter((book) => book.id !== id);
-      setBooks(updatedBooks);
-      toast.success(`کتاب "${title}" با موفقیت حذف شد`);
+      try {
+        await removeBook(id);
+        toast.success(`کتاب "${title}" با موفقیت حذف شد`);
+      } catch (err) {
+        toast.error(err.message || "خطا در حذف کتاب");
+      }
     }
   };
 
@@ -118,7 +121,7 @@ function AdminBooks() {
                       />
                     </td>
                     <td className="p-4 font-bold text-primary text-sm">{book.title}</td>
-                    <td className="p-4 text-text-secondary text-sm">{book.author}</td>
+                    <td className="p-4 text-text-secondary text-sm">{book.authorName}</td>
                     <td className="p-4">
                       <span className="bg-primary-bg text-primary text-xs px-3 py-1.5 rounded-full">
                         {book.category || "—"}

@@ -176,7 +176,7 @@ function AdminDashboard() {
                   <img src={book.image} alt={book.title} className="w-12 h-16 object-cover rounded-lg shadow" />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-primary truncate">{book.title}</p>
-                    <p className="text-xs text-text-muted">{book.author}</p>
+                    <p className="text-xs text-text-muted">{book.authorName}</p>
                   </div>
                   <span className="text-xs text-text-muted bg-primary-bg px-2 py-1 rounded-full">
                     {book.category || "—"}

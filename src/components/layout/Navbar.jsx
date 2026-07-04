@@ -43,7 +43,7 @@ function Navbar() {
     const results = books.filter(
       (b) =>
         b.title.includes(searchQuery) ||
-        (b.author  && b.author.includes(searchQuery))  ||
+        (b.authorName  && b.authorName.includes(searchQuery))  ||
         (b.category && b.category.includes(searchQuery)) ||
         (b.isbn    && b.isbn.includes(searchQuery))
     );
@@ -107,7 +107,7 @@ function Navbar() {
                 <img src={book.image} alt={book.title} className="w-10 h-14 object-cover rounded-lg shadow shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-text truncate">{book.title}</p>
-                  <p className="text-xs text-text-muted truncate">{book.author}</p>
+                  <p className="text-xs text-text-muted truncate">{book.authorName}</p>
                   {book.category && (
                     <span className="text-xs text-accent bg-accent/10 px-2 py-0.5 rounded-full inline-block mt-0.5">
                       {book.category}

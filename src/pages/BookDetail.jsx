@@ -104,7 +104,7 @@ function RelatedBookCard({ book: rel }) {
         <h4 className="font-bold text-primary text-sm group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem]">
           {rel.title}
         </h4>
-        <p className="text-xs text-text-muted mt-1 truncate">{rel.author}</p>
+        <p className="text-xs text-text-muted mt-1 truncate">{rel.authorName}</p>
         <div className="flex items-center justify-between mt-2">
           {rel.edition && (
             <span className="text-[10px] bg-primary-bg text-primary px-2 py-0.5 rounded-full">
@@ -147,12 +147,12 @@ function BookDetail() {
 
       // اول کتاب‌های همین نویسنده
       const byAuthor = others
-        .filter((b) => b.author === found.author)
+        .filter((b) => b.authorName === found.authorName)
         .slice(0, 4);
 
       // بعد کتاب‌های همین دسته (که نویسنده‌شان متفاوت است)
       const byCategory = others
-        .filter((b) => b.category === found.category && b.author !== found.author)
+        .filter((b) => b.category === found.category && b.authorName !== found.authorName)
         .slice(0, 4);
 
       setSameAuthor(byAuthor);
@@ -216,7 +216,7 @@ function BookDetail() {
       {/* ✅ Meta داینامیک بر اساس اطلاعات هر کتاب */}
       <PageMeta
         title={book.title}
-        description={book.description ? book.description.slice(0, 160) : `کتاب ${book.title} نوشته ${book.author}`}
+        description={book.description ? book.description.slice(0, 160) : `کتاب ${book.title} نوشته ${book.authorName}`}
         image={book.image}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 pt-28">
@@ -302,7 +302,7 @@ function BookDetail() {
                 <svg className="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                {book.author}
+                {book.authorName}
               </span>
               {book.edition && (
                 <span className="text-sm bg-primary-bg text-primary px-3 py-1 rounded-full">
@@ -389,11 +389,11 @@ function BookDetail() {
             <div>
               <h2 className="text-2xl font-bold text-primary">سایر آثار نویسنده</h2>
               <p className="text-sm text-text-muted mt-1">
-                دیگر کتاب‌های <span className="text-accent font-bold">{book.author}</span>
+                دیگر کتاب‌های <span className="text-accent font-bold">{book.authorName}</span>
               </p>
             </div>
             <Link
-              to={`/books?search=${encodeURIComponent(book.author)}`}
+              to={`/books?search=${encodeURIComponent(book.authorName)}`}
               className="text-accent font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
             >
               <span>همه آثار</span>

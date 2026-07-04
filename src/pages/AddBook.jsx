@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import useBooks from "../hooks/useBooks";
+import booksService from "../services/booksService";
 import ImageUploader from "../components/ui/ImageUploader";
 import toast from "react-hot-toast";
 
 const INPUT_CLS = "w-full border-2 border-primary-light/30 rounded-xl p-3.5 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all bg-primary-bg/30";
 
 const EDITIONS = ["اول","دوم","سوم","چهارم","پنجم","ششم","هفتم","هشتم","نهم","دهم"];
+
+// ✅ تبدیل base64 (خروجی ImageUploader در حالت آپلود) به File برای ارسال multipart
+function dataUrlToFile(dataUrl, filename) {
+  const [header, base64] = dataUrl.split(",");
+  const mimeMatch = header.match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new File([bytes], filename, { type: mime });
+}
 
 const EMPTY_FORM = {
   title: "", author: "", description: "", category: "",
@@ -17,7 +28,6 @@ const EMPTY_FORM = {
 
 function AddBook() {
   const navigate = useNavigate();
-  const { books, setBooks } = useBooks();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
 
@@ -29,7 +39,7 @@ function AddBook() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.author.trim()) {
@@ -37,38 +47,52 @@ function AddBook() {
       return;
     }
 
-    // ✅ اعتبارسنجی شابک
-    if (formData.isbn && !/^\d{1,13}$/.test(formData.isbn)) {
-      toast.error("شابک باید فقط عدد و حداکثر ۱۳ رقم باشد");
+    // ✅ اعتبارسنجی شابک — هماهنگ با بک‌اند (۱۰ یا ۱۳ رقم)
+    if (formData.isbn && !/^\d{10,13}$/.test(formData.isbn)) {
+      toast.error("شابک باید ۱۰ یا ۱۳ رقم عدد باشد");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const newBook = {
-        id: Date.now(),
+      const isUploadedImage = formData.image && formData.image.startsWith("data:");
+
+      const payload = {
         title:         formData.title.trim(),
-        author:        formData.author.trim(),
-        image:         formData.image || "https://placehold.co/300x450/1E3A34/ffffff?text=کتاب+جدید",
-        description:   formData.description.trim(),
-        category:      formData.category.trim(),
-        pages:         Number(formData.pages) || 0,
-        year:          Number(formData.year)  || 0,
+        authorName:    formData.author.trim(),
+        description:   formData.description.trim() || undefined,
+        category:      formData.category.trim() || undefined,
+        pages:         formData.pages ? Number(formData.pages) : undefined,
+        year:          formData.year ? Number(formData.year) : undefined,
         isAudio:       formData.isAudio || false,
-        // ✅ فیلدهای جدید
-        price:         formData.price.trim(),
-        isbn:          formData.isbn.trim(),
-        edition:       formData.edition,
-        publisherCity: formData.publisherCity.trim(),
+        price:         formData.price ? Number(formData.price) : null,
+        isbn:          formData.isbn.trim() || undefined,
+        edition:       formData.edition || undefined,
+        publisherCity: formData.publisherCity.trim() || undefined,
+        // ✅ اگر کاربر لینک تصویر وارد کرده (نه آپلود فایل)، همینجا بفرست
+        ...(formData.image && !isUploadedImage ? { image: formData.image } : {}),
       };
 
-      setBooks([...(Array.isArray(books) ? books : []), newBook]);
-      toast.success(`کتاب "${newBook.title}" با موفقیت اضافه شد!`);
+      // ✅ ساخت واقعی کتاب در بک‌اند
+      const result = await booksService.create(payload);
+
+      // ✅ اگر تصویری از دستگاه آپلود شده، حالا که id کتاب را داریم آن را ارسال کن
+      if (isUploadedImage && result?.book?.id) {
+        try {
+          const file = dataUrlToFile(formData.image, "cover.jpg");
+          await booksService.uploadImage(result.book.id, file);
+        } catch (imgErr) {
+          toast.error("کتاب ذخیره شد، ولی آپلود تصویر جلد با خطا مواجه شد.");
+        }
+      }
+
+      toast.success(`کتاب "${payload.title}" با موفقیت اضافه شد!`);
       navigate("/admin/books");
     } catch (err) {
       console.error("خطا در افزودن کتاب:", err);
-      toast.error("خطایی در ذخیره کتاب رخ داد");
+      toast.error(err.message || "خطایی در ذخیره کتاب رخ داد");
+    } finally {
       setIsSubmitting(false);
     }
   };

@@ -126,7 +126,7 @@ function Hero() {
                         {featuredBook ? featuredBook.title : "کتاب ویژه"}
                       </p>
                       <p className="text-accent-light text-sm mt-1">
-                        {featuredBook ? featuredBook.author : "انتشارات الحان"}
+                        {featuredBook ? featuredBook.authorName : "انتشارات الحان"}
                       </p>
                       {featuredBook && (
                         <Link

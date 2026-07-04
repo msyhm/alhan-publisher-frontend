@@ -25,7 +25,7 @@ function useAuthors() {
   }, []);
 
   const getBooksOf = useCallback(
-    (authorName) => books.filter((b) => b.author === authorName),
+    (authorName) => books.filter((b) => b.authorName === authorName),
     [books]
   );
 
