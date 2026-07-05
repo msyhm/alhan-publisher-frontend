@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import useSiteSettings from "../hooks/useSiteSettings";
 import apiClient from "../services/apiClient";
+import { setToken } from "../services/authToken";
+
 
 function AdminLogin() {
   const navigate  = useNavigate();
@@ -21,6 +23,7 @@ function AdminLogin() {
       // ✅ لاگین واقعی با API بکند
       // بکند JWT را در httpOnly cookie ذخیره می‌کند — نیازی به sessionStorage نیست
       const res = await apiClient.post("/auth/login", { username, password });
+      setToken(res.token);
 
       toast.success(res.message || "خوش آمدید");
       navigate("/admin");

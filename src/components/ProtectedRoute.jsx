@@ -2,6 +2,8 @@ import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import apiClient from "../services/apiClient";
 import LoadingSpinner from "./LoadingSpinner";
+import { clearToken } from "../services/authToken";
+
 
 /**
  * ProtectedRoute — نسخه API
@@ -26,6 +28,7 @@ function ProtectedRoute({ children }) {
 // ✅ این توابع دیگر نیازی نیستند — برای سازگاری با کدهای قدیمی نگه داشته شده
 export function createAdminSession() {}
 export function clearAdminSession() {
+  clearToken();
   apiClient.post("/auth/logout").catch(() => {});
 }
 export function isAdminAuthenticated() { return true; }

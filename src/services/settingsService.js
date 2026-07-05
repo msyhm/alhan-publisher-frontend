@@ -3,6 +3,8 @@
  * مسیر فایل: src/services/settingsService.js
  */
 import apiClient from "./apiClient.js";
+import { setToken, clearToken } from "./authToken.js";
+
 
 const settingsService = {
   // دریافت همه تنظیمات (عمومی)
@@ -61,16 +63,21 @@ const settingsService = {
 
   async updateCredentials(updates) {
     if (updates.adminPassword) {
-      return apiClient.put("/auth/password", {
+      const res = await apiClient.put("/auth/password", {
         newPassword:     updates.adminPassword,
         confirmPassword: updates.adminPassword,
         currentPassword: updates.currentPassword || "",
       });
+      clearToken();
+      return res;
     }
     if (updates.adminUsername) {
-      return apiClient.put("/auth/username", { username: updates.adminUsername });
+      const res = await apiClient.put("/auth/username", { username: updates.adminUsername });
+      if (res.token) setToken(res.token);
+      return res;
     }
   },
+
 };
 
 export default settingsService;
