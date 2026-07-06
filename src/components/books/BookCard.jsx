@@ -15,11 +15,14 @@ function BookCard({ book }) {
       <div className="bg-white rounded-2xl shadow-card hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col relative border border-primary/5">
 
         {/* ===== تصویر ===== */}
-        <div className="relative overflow-hidden bg-primary-bg">
+        {/* نسبت تصویر مطابق قطع رقعی (رایج‌ترین قطع کتاب‌های فارسی) تنظیم شده تا جلد کتاب کشیده یا کراپ نامتناسب نشود */}
+        <div className="relative overflow-hidden bg-primary-bg aspect-[29/41]">
           <img
             src={book.image}
             alt={book.title}
-            className="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
 
           {/* Overlay گرادینت */}
