@@ -24,18 +24,25 @@ const BookOpenIcon = () => (
   </svg>
 );
 
+const AUTOPLAY_SPEED = 45; // پیکسل بر ثانیه — سرعت اسکرول خودکار پیوسته
+
 function LatestBooks() {
   const { books } = useBooks();
   const sliderRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0 });
-  const autoPlayRef = useRef(null);
+  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
+  const pausedRef = useRef(false); // true حین درگ یا هاور یا کلیک روی فلش‌ها
+  const rafRef = useRef(null);
+  const DRAG_THRESHOLD = 6; // px — کمتر از این یعنی کلیک، بیشتر یعنی درگ واقعی
 
   const latestBooks = books.slice(0, 10);
   const totalItems = latestBooks.length;
-  const maxIndex = Math.max(0, totalItems - Math.floor(itemsPerView));
+
+  // فقط وقتی کتاب‌ها از عرض دید بیشترند، اسکرول پیوسته/بی‌نهایت لازم است
+  const shouldLoop = totalItems > Math.ceil(itemsPerView);
+  // ✅ برای لوپ بی‌درز، لیست را دوبار پشت‌سرهم رندر می‌کنیم
+  const displayBooks = shouldLoop ? [...latestBooks, ...latestBooks] : latestBooks;
 
   // محاسبه تعداد آیتم با عرض متناسب
   useEffect(() => {
@@ -49,102 +56,141 @@ function LatestBooks() {
       else setItemsPerView(3.5);
     };
     updateItemsPerView();
-    window.addEventListener('resize', updateItemsPerView);
-    return () => window.removeEventListener('resize', updateItemsPerView);
+    window.addEventListener("resize", updateItemsPerView);
+    return () => window.removeEventListener("resize", updateItemsPerView);
   }, []);
 
-  // تابع کمکی برای دریافت scrollLeft در RTL
-  const getScrollPosition = useCallback(() => {
+  // فاصله‌ی واقعی بین کارت‌ها (از CSS خوانده می‌شود، نه عدد ثابت)
+  const getGap = useCallback(() => {
     const slider = sliderRef.current;
-    if (!slider) return 0;
-    return Math.abs(slider.scrollLeft);
+    if (!slider) return 20;
+    return parseFloat(getComputedStyle(slider).columnGap) || 20;
   }, []);
 
-  // اسکرول به ایندکس مشخص
-  const scrollToIndex = useCallback((index) => {
+  // عرض یک «دور کامل» (یعنی عرض یک‌بار کل latestBooks، نه دو نسخه‌ی تکراری‌اش)
+  const getSetWidth = useCallback(() => {
+    const slider = sliderRef.current;
+    if (!slider || !totalItems) return 0;
+    const cards = slider.querySelectorAll(".book-card-wrapper");
+    if (!cards.length) return 0;
+    const cardWidth = cards[0].offsetWidth;
+    return totalItems * (cardWidth + getGap());
+  }, [totalItems, getGap]);
+
+  // ───────────────────────────────────────────────────────────────────────
+  // ✅ اسکرول خودکار پیوسته (requestAnimationFrame) — بدون توقف/پرش
+  // ───────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider || !shouldLoop) return;
+
+    let lastTs = null;
+
+    const tick = (ts) => {
+      if (lastTs === null) lastTs = ts;
+      const dt = ts - lastTs;
+      lastTs = ts;
+
+      if (!dragRef.current.active && !pausedRef.current) {
+        const setWidth = getSetWidth();
+        if (setWidth > 0) {
+          // محتوا RTL است؛ scrollLeft در مرورگرهای مدرن برای RTL منفی می‌شود
+          slider.scrollLeft -= (AUTOPLAY_SPEED * dt) / 1000;
+          // ✅ به‌محض رسیدن به انتهای نسخه‌ی اول، بی‌درز (بدون انیمیشن) به همان موقعیت
+          // در نسخه‌ی دوم برمی‌گردیم — چون محتوا یکسان است، هیچ پرشی دیده نمی‌شود
+          if (Math.abs(slider.scrollLeft) >= setWidth) {
+            slider.scrollLeft += setWidth;
+          }
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [shouldLoop, getSetWidth]);
+
+  // بعد از درگ دستی هم اگر از محدوده‌ی یک «دور» بیرون رفتیم، بی‌درز برگردیم داخل محدوده
+  const normalizeLoopPosition = useCallback(() => {
+    if (!shouldLoop) return;
     const slider = sliderRef.current;
     if (!slider) return;
+    const setWidth = getSetWidth();
+    if (setWidth <= 0) return;
+    if (Math.abs(slider.scrollLeft) >= setWidth) {
+      slider.scrollLeft += setWidth;
+    } else if (slider.scrollLeft > 0) {
+      slider.scrollLeft -= setWidth;
+    }
+  }, [shouldLoop, getSetWidth]);
 
-    const cards = slider.querySelectorAll('.book-card-wrapper');
-    if (!cards.length) return;
+  // حرکت دستی با دکمه‌های فلش (یک کارت در هر کلیک، بدون پرش)
+  const nudge = useCallback(
+    (direction) => {
+      const slider = sliderRef.current;
+      if (!slider) return;
+      const cards = slider.querySelectorAll(".book-card-wrapper");
+      if (!cards.length) return;
 
-    const targetIndex = Math.min(index, cards.length - 1);
-    const targetCard = cards[targetIndex];
-    if (!targetCard) return;
+      const cardWidth = cards[0].offsetWidth;
+      const amount = cardWidth + getGap();
 
-    const gap = 20;
-    const cardWidth = targetCard.offsetWidth;
-    const targetPosition = targetIndex * (cardWidth + gap);
+      pausedRef.current = true;
+      slider.scrollBy({ left: -amount * direction, behavior: "smooth" });
+      window.clearTimeout(nudge._t);
+      nudge._t = window.setTimeout(() => {
+        pausedRef.current = false;
+      }, 600);
+    },
+    [getGap]
+  );
 
-    slider.scrollTo({
-      left: -targetPosition,
-      behavior: 'smooth'
-    });
+  const slideRight = () => nudge(1);
+  const slideLeft = () => nudge(-1);
+
+  // ✅ اگر واقعاً درگ اتفاق افتاده، از رفتن به لینک کتاب (ناوبری ناخواسته) جلوگیری کن
+  const handleSliderClickCapture = useCallback((e) => {
+    if (dragRef.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragRef.current.moved = false;
+    }
   }, []);
 
-  // حرکت به راست
-  const slideRight = useCallback(() => {
-    if (currentIndex < maxIndex) {
-      const newIndex = currentIndex + 1;
-      setCurrentIndex(newIndex);
-      scrollToIndex(newIndex);
-    }
-  }, [currentIndex, maxIndex, scrollToIndex]);
-
-  // حرکت به چپ
-  const slideLeft = useCallback(() => {
-    if (currentIndex > 0) {
-      const newIndex = currentIndex - 1;
-      setCurrentIndex(newIndex);
-      scrollToIndex(newIndex);
-    }
-  }, [currentIndex, scrollToIndex]);
-
-  // اسنپ به نزدیک‌ترین کارت
-  const snapToNearestCard = useCallback(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    
-    const cards = slider.querySelectorAll('.book-card-wrapper');
-    if (!cards.length) return;
-
-    const cardWidth = cards[0]?.offsetWidth || 220;
-    const gap = 20;
-    const scrollPosition = getScrollPosition();
-    const newIndex = Math.round(scrollPosition / (cardWidth + gap));
-    const clampedIndex = Math.max(0, Math.min(newIndex, maxIndex));
-    
-    setCurrentIndex(clampedIndex);
-    scrollToIndex(clampedIndex);
-  }, [maxIndex, getScrollPosition, scrollToIndex]);
+  // ✅ جلوگیری از drag-ghost بومی مرورگر روی تصویر/لینک — علت اصلی
+  // «هایلایت‌شدن لینک‌ها» هنگام اسکرول با ماوس
+  const handleDragStart = useCallback((e) => {
+    e.preventDefault();
+  }, []);
 
   // هندل درگ با ماوس
   const handleMouseDown = useCallback((e) => {
     if (!sliderRef.current) return;
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
-    
+
     dragRef.current = {
       active: true,
       startX: e.clientX - rect.left,
       scrollLeft: slider.scrollLeft,
+      moved: false,
     };
     setIsDragging(true);
-    
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-    }
   }, []);
 
   const handleMouseMove = useCallback((e) => {
     if (!dragRef.current.active || !sliderRef.current) return;
     e.preventDefault();
-    
+
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const walk = (x - dragRef.current.startX) * 1.5;
-    
+
+    if (Math.abs(walk) > DRAG_THRESHOLD) dragRef.current.moved = true;
+
     slider.scrollLeft = dragRef.current.scrollLeft + walk;
   }, []);
 
@@ -152,9 +198,8 @@ function LatestBooks() {
     if (!dragRef.current.active) return;
     dragRef.current.active = false;
     setIsDragging(false);
-    snapToNearestCard();
-    startAutoPlay();
-  }, [snapToNearestCard]);
+    normalizeLoopPosition();
+  }, [normalizeLoopPosition]);
 
   // هندل تاچ برای موبایل
   const handleTouchStart = useCallback((e) => {
@@ -162,85 +207,42 @@ function LatestBooks() {
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const touch = e.touches[0];
-    
+
     dragRef.current = {
       active: true,
       startX: touch.clientX - rect.left,
       scrollLeft: slider.scrollLeft,
+      moved: false,
     };
-    
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-    }
   }, []);
 
   const handleTouchMove = useCallback((e) => {
     if (!dragRef.current.active || !sliderRef.current) return;
-    e.preventDefault();
-    
+
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const touch = e.touches[0];
     const x = touch.clientX - rect.left;
     const walk = (x - dragRef.current.startX) * 1.5;
-    
+
+    if (Math.abs(walk) > DRAG_THRESHOLD) dragRef.current.moved = true;
+
     slider.scrollLeft = dragRef.current.scrollLeft + walk;
   }, []);
 
   const handleTouchEnd = useCallback(() => {
     dragRef.current.active = false;
-    snapToNearestCard();
-    startAutoPlay();
-  }, [snapToNearestCard]);
+    normalizeLoopPosition();
+  }, [normalizeLoopPosition]);
 
-  // AutoPlay
-  const startAutoPlay = useCallback(() => {
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-    }
-    autoPlayRef.current = setInterval(() => {
-      if (currentIndex < maxIndex) {
-        slideRight();
-      } else {
-        setCurrentIndex(0);
-        scrollToIndex(0);
-      }
-    }, 4000);
-  }, [currentIndex, maxIndex, slideRight, scrollToIndex]);
+  const handleMouseEnter = useCallback(() => {
+    pausedRef.current = true;
+  }, []);
 
-  useEffect(() => {
-    startAutoPlay();
-    return () => {
-      if (autoPlayRef.current) {
-        clearInterval(autoPlayRef.current);
-      }
-    };
-  }, [startAutoPlay]);
-
-  // هندل اسکرول
-  const handleScroll = useCallback(() => {
-    const slider = sliderRef.current;
-    if (!slider || dragRef.current.active) return;
-    
-    const cards = slider.querySelectorAll('.book-card-wrapper');
-    if (!cards.length) return;
-    
-    const cardWidth = cards[0]?.offsetWidth || 220;
-    const gap = 20;
-    const scrollPosition = getScrollPosition();
-    const newIndex = Math.round(scrollPosition / (cardWidth + gap));
-    const clampedIndex = Math.max(0, Math.min(newIndex, maxIndex));
-    
-    if (clampedIndex !== currentIndex) {
-      setCurrentIndex(clampedIndex);
-    }
-  }, [maxIndex, getScrollPosition, currentIndex]);
-
-  const goToSlide = useCallback((index) => {
-    const clampedIndex = Math.max(0, Math.min(index, maxIndex));
-    setCurrentIndex(clampedIndex);
-    scrollToIndex(clampedIndex);
-  }, [maxIndex, scrollToIndex]);
+  const handleMouseLeaveContainer = useCallback(() => {
+    pausedRef.current = false;
+    handleMouseUp();
+  }, [handleMouseUp]);
 
   if (!latestBooks.length) {
     return (
@@ -275,9 +277,11 @@ function LatestBooks() {
             </p>
           </div>
 
+          {/* ✅ self-end: در حالت flex-col موبایل دیگر کش نمی‌آید تمام عرض را بگیرد،
+              فقط به‌اندازه‌ی متنش عریض می‌شود و به سمت انتهای محور عرضی (چپ، چون RTL) می‌چسبد */}
           <Link
             to="/books"
-            className="text-xs sm:text-sm text-primary font-bold border-2 border-primary px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
+            className="self-end shrink-0 text-xs sm:text-sm text-primary font-bold border-2 border-primary px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
           >
             همه کتاب‌ها
           </Link>
@@ -288,11 +292,9 @@ function LatestBooks() {
           {/* دکمه چپ - با آیکون فلش چپ */}
           <button
             onClick={slideRight}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95 ${
-              currentIndex < maxIndex ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-            }`}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95"
             aria-label="حرکت به راست"
-            style={{ marginLeft: '-4px' }}
+            style={{ marginLeft: "-4px" }}
           >
             <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
@@ -300,11 +302,9 @@ function LatestBooks() {
           {/* دکمه راست - با آیکون فلش راست */}
           <button
             onClick={slideLeft}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95 ${
-              currentIndex > 0 ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-            }`}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95"
             aria-label="حرکت به چپ"
-            style={{ marginRight: '-4px' }}
+            style={{ marginRight: "-4px" }}
           >
             <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
@@ -313,32 +313,37 @@ function LatestBooks() {
           <div
             dir="rtl"
             ref={sliderRef}
-            onScroll={handleScroll}
+            onScroll={shouldLoop ? normalizeLoopPosition : undefined}
+            onClickCapture={handleSliderClickCapture}
+            onDragStart={handleDragStart}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeaveContainer}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto py-4 px-6 sm:px-8 select-none snap-x snap-mandatory
+            className={`flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto py-4 px-6 sm:px-8 select-none
               [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
-              ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
+              ${isDragging ? "cursor-grabbing" : "cursor-grab"}
             `}
           >
-            {latestBooks.map((book) => (
+            {displayBooks.map((book, i) => (
               <div
-                key={book.id}
-                className="book-card-wrapper flex-none snap-start transition-all duration-300"
+                key={`${book.id}-${i}`}
+                draggable={false}
+                className="book-card-wrapper flex-none shrink-0"
                 style={{
-                  width: itemsPerView <= 1 ? '85%' : 
-                         itemsPerView <= 1.5 ? '60%' :
-                         itemsPerView <= 2 ? '48%' :
-                         itemsPerView <= 2.5 ? '38%' :
-                         itemsPerView <= 3 ? '31%' :
-                         '26%',
-                  minWidth: '160px',
-                  maxWidth: '280px',
+                  width:
+                    itemsPerView <= 1 ? "85%" :
+                    itemsPerView <= 1.5 ? "60%" :
+                    itemsPerView <= 2 ? "48%" :
+                    itemsPerView <= 2.5 ? "38%" :
+                    itemsPerView <= 3 ? "31%" :
+                    "26%",
+                  minWidth: "160px",
+                  maxWidth: "280px",
                 }}
               >
                 <BookCard book={book} />
@@ -346,30 +351,6 @@ function LatestBooks() {
             ))}
           </div>
         </div>
-
-        {/* ===== نقاط ناوبری ===== */}
-        {totalItems > 0 && (
-          <div className="flex justify-center items-center gap-1.5 sm:gap-2 mt-3">
-            {Array.from({ length: Math.min(6, maxIndex + 1) }).map((_, i) => {
-              const isActive = i === Math.min(currentIndex, maxIndex);
-              return (
-                <button
-                  key={i}
-                  onClick={() => goToSlide(i)}
-                  className={`transition-all duration-300 rounded-full ${
-                    isActive
-                      ? "w-6 sm:w-8 h-1.5 sm:h-2 bg-accent shadow-lg shadow-accent/30"
-                      : "w-1.5 sm:w-2 h-1.5 sm:h-2 bg-primary/20 hover:bg-primary/50 hover:scale-125"
-                  }`}
-                  aria-label={`اسلاید ${i + 1}`}
-                />
-              );
-            })}
-            {maxIndex + 1 > 6 && (
-              <span className="text-[10px] sm:text-xs text-text-muted mr-1">+{maxIndex + 1 - 6}</span>
-            )}
-          </div>
-        )}
       </div>
     </section>
   );

@@ -15,7 +15,7 @@ function BookCard({ book }) {
       <div className="bg-white rounded-2xl shadow-card hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col relative border border-primary/5">
 
         {/* ===== تصویر ===== */}
-        <div className="relative overflow-hidden bg-primary-bg">
+        <div className="relative overflow-hidden bg-primary-bg aspect-[2/3] w-full shrink-0">
           <img
             src={book.image}
             alt={book.title}
