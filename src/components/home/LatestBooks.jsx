@@ -30,11 +30,8 @@ function LatestBooks() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
+  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0 });
   const autoPlayRef = useRef(null);
-  const isHoveringRef = useRef(false);
-  const directionRef = useRef(1); // 1 = جلو، -1 = عقب (برای autoplay رفت‌وبرگشتی به‌جای پرش)
-  const DRAG_THRESHOLD = 6; // پیکسل — کمتر از این یعنی «کلیک»، بیشتر یعنی «درگ»
 
   const latestBooks = books.slice(0, 10);
   const totalItems = latestBooks.length;
@@ -126,17 +123,14 @@ function LatestBooks() {
     if (!sliderRef.current) return;
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
-
+    
     dragRef.current = {
       active: true,
       startX: e.clientX - rect.left,
-      startClientX: e.clientX,
-      startClientY: e.clientY,
       scrollLeft: slider.scrollLeft,
-      moved: false,
     };
     setIsDragging(true);
-
+    
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
     }
@@ -145,19 +139,12 @@ function LatestBooks() {
   const handleMouseMove = useCallback((e) => {
     if (!dragRef.current.active || !sliderRef.current) return;
     e.preventDefault();
-
+    
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const walk = (x - dragRef.current.startX) * 1.5;
-
-    // فقط وقتی جابه‌جایی واقعی از آستانه رد شد، «درگ» در نظر گرفته می‌شود
-    // تا کلیک‌های ساده روی کارت به‌اشتباه به‌عنوان درگ لغو نشوند
-    const totalMove = Math.abs(e.clientX - dragRef.current.startClientX);
-    if (totalMove > DRAG_THRESHOLD) {
-      dragRef.current.moved = true;
-    }
-
+    
     slider.scrollLeft = dragRef.current.scrollLeft + walk;
   }, []);
 
@@ -166,16 +153,8 @@ function LatestBooks() {
     dragRef.current.active = false;
     setIsDragging(false);
     snapToNearestCard();
-    if (!isHoveringRef.current) return;
     startAutoPlay();
   }, [snapToNearestCard]);
-
-  // این تابع به BookCard پاس داده می‌شود تا بفهمد آخرین تعامل «درگ» بوده یا «کلیک»
-  const wasDragged = useCallback(() => {
-    const moved = dragRef.current.moved;
-    dragRef.current.moved = false;
-    return moved;
-  }, []);
 
   // هندل تاچ برای موبایل
   const handleTouchStart = useCallback((e) => {
@@ -183,15 +162,13 @@ function LatestBooks() {
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const touch = e.touches[0];
-
+    
     dragRef.current = {
       active: true,
       startX: touch.clientX - rect.left,
-      startClientX: touch.clientX,
       scrollLeft: slider.scrollLeft,
-      moved: false,
     };
-
+    
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
     }
@@ -200,17 +177,13 @@ function LatestBooks() {
   const handleTouchMove = useCallback((e) => {
     if (!dragRef.current.active || !sliderRef.current) return;
     e.preventDefault();
-
+    
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const touch = e.touches[0];
     const x = touch.clientX - rect.left;
     const walk = (x - dragRef.current.startX) * 1.5;
-
-    if (Math.abs(touch.clientX - dragRef.current.startClientX) > DRAG_THRESHOLD) {
-      dragRef.current.moved = true;
-    }
-
+    
     slider.scrollLeft = dragRef.current.scrollLeft + walk;
   }, []);
 
@@ -220,26 +193,20 @@ function LatestBooks() {
     startAutoPlay();
   }, [snapToNearestCard]);
 
-  // AutoPlay — رفت‌وبرگشتی (bounce) به‌جای پرش ناگهانی به ابتدای لیست
+  // AutoPlay
   const startAutoPlay = useCallback(() => {
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
     }
     autoPlayRef.current = setInterval(() => {
-      setCurrentIndex((prev) => {
-        let next = prev + directionRef.current;
-        if (next > maxIndex) {
-          directionRef.current = -1;
-          next = Math.max(0, maxIndex - 1);
-        } else if (next < 0) {
-          directionRef.current = 1;
-          next = Math.min(maxIndex, 1);
-        }
-        scrollToIndex(next);
-        return next;
-      });
+      if (currentIndex < maxIndex) {
+        slideRight();
+      } else {
+        setCurrentIndex(0);
+        scrollToIndex(0);
+      }
     }, 4000);
-  }, [maxIndex, scrollToIndex]);
+  }, [currentIndex, maxIndex, slideRight, scrollToIndex]);
 
   useEffect(() => {
     startAutoPlay();
@@ -248,17 +215,6 @@ function LatestBooks() {
         clearInterval(autoPlayRef.current);
       }
     };
-  }, [startAutoPlay]);
-
-  // توقف autoplay هنگام هاور (شامل اسکرول با تاچ‌پد/ویل که mousedown را فعال نمی‌کند)
-  const handleMouseEnter = useCallback(() => {
-    isHoveringRef.current = true;
-    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-  }, []);
-
-  const handleMouseLeaveSlider = useCallback(() => {
-    isHoveringRef.current = false;
-    if (!dragRef.current.active) startAutoPlay();
   }, [startAutoPlay]);
 
   // هندل اسکرول
@@ -328,11 +284,7 @@ function LatestBooks() {
         </div>
 
         {/* ===== اسلایدر ===== */}
-        <div
-          className="relative py-4"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeaveSlider}
-        >
+        <div className="relative py-4">
           {/* دکمه چپ - با آیکون فلش چپ */}
           <button
             onClick={slideRight}
@@ -389,7 +341,7 @@ function LatestBooks() {
                   maxWidth: '280px',
                 }}
               >
-                <BookCard book={book} onDragClick={wasDragged} />
+                <BookCard book={book} />
               </div>
             ))}
           </div>

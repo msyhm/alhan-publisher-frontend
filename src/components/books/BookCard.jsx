@@ -2,27 +2,13 @@ import { Link } from "react-router-dom";
 import Icon from "../ui/Icon";
 import { useState } from "react";
 
-function BookCard({ book, onDragClick }) {
+function BookCard({ book }) {
   const [isHovered, setIsHovered] = useState(false);
-
-  // جلوگیری از drag بومی مرورگر روی لینک/تصویر
-  // (این drag بومی با اسکرول دستی سفارشی اسلایدر تداخل ایجاد می‌کند)
-  const handleDragStart = (e) => e.preventDefault();
-
-  // اگر کاربر کارت را «درگ» کرده باشد (نه کلیک ساده)، از navigate شدن جلوگیری می‌شود
-  const handleClick = (e) => {
-    if (onDragClick && onDragClick()) {
-      e.preventDefault();
-    }
-  };
 
   return (
     <Link
       to={"/books/" + book.id}
       className="group block h-full"
-      draggable={false}
-      onDragStart={handleDragStart}
-      onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -36,8 +22,6 @@ function BookCard({ book, onDragClick }) {
             alt={book.title}
             loading="lazy"
             decoding="async"
-            draggable={false}
-            onDragStart={handleDragStart}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
 
