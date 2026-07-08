@@ -4,6 +4,8 @@ import { useState } from "react";
 
 function BookCard({ book }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const hasImage = Boolean(book.image) && !imgError;
 
   return (
     <Link
@@ -16,11 +18,36 @@ function BookCard({ book }) {
 
         {/* ===== تصویر ===== */}
         <div className="relative overflow-hidden bg-primary-bg aspect-[2/3] w-full shrink-0">
-          <img
-            src={book.image}
-            alt={book.title}
-            className="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-700 group-hover:scale-110"
-          />
+          {hasImage ? (
+            <>
+              {/* پس‌زمینه‌ی محوشده از همان تصویر — فضای خالی احتمالی رو با رنگ/جلوه‌ی هماهنگ با خود تصویر پر می‌کنه */}
+              <img
+                src={book.image}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-70"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/25" />
+              {/* تصویر اصلی — کامل و بدون برش (object-contain) */}
+              <img
+                src={book.image}
+                alt={book.title}
+                draggable={false}
+                loading="lazy"
+                onError={() => setImgError(true)}
+                className="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+              />
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary-bg to-primary-bg/60 text-primary/25">
+              <svg className="w-10 h-10 sm:w-12 sm:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              <span className="text-[10px] sm:text-xs">بدون تصویر</span>
+            </div>
+          )}
 
           {/* Overlay گرادینت */}
           <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
