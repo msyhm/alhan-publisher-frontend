@@ -36,7 +36,7 @@ function BookCard({ book }) {
                 draggable={false}
                 loading="lazy"
                 onError={() => setImgError(true)}
-                className="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                className="absolute inset-0 m-auto h-full w-auto max-w-none transition-transform duration-700 group-hover:scale-105"
               />
             </>
           ) : (

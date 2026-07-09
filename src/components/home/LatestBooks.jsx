@@ -1,10 +1,9 @@
 // LatestBooks.jsx
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import useBooks from "../../hooks/useBooks";
 import BookCard from "../books/BookCard";
 
-// آیکون‌های SVG
 const ChevronLeftIcon = ({ className = "w-6 h-6" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -29,25 +28,21 @@ function LatestBooks() {
   const sliderRef = useRef(null);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [isDragging, setIsDragging] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
-  const scrollRafRef = useRef(null);
   const DRAG_THRESHOLD = 6;
 
   const latestBooks = books.slice(0, 10);
   const totalItems = latestBooks.length;
-  const canPrev = currentIndex > 0;
-  const canNext = currentIndex < totalItems - 1;
 
   useEffect(() => {
     const updateItemsPerView = () => {
       const width = window.innerWidth;
-      if (width < 480) setItemsPerView(1.3);
-      else if (width < 640) setItemsPerView(2);
-      else if (width < 768) setItemsPerView(2.6);
-      else if (width < 1024) setItemsPerView(3.4);
-      else if (width < 1280) setItemsPerView(4.2);
-      else setItemsPerView(5.2);
+      if (width < 480) setItemsPerView(1.6);
+      else if (width < 640) setItemsPerView(2.4);
+      else if (width < 768) setItemsPerView(3);
+      else if (width < 1024) setItemsPerView(4);
+      else if (width < 1280) setItemsPerView(5);
+      else setItemsPerView(6.2);
     };
     updateItemsPerView();
     window.addEventListener("resize", updateItemsPerView);
@@ -56,53 +51,25 @@ function LatestBooks() {
 
   const getGap = useCallback(() => {
     const slider = sliderRef.current;
-    if (!slider) return 16;
-    return parseFloat(getComputedStyle(slider).columnGap) || 16;
+    if (!slider) return 12;
+    return parseFloat(getComputedStyle(slider).columnGap) || 12;
   }, []);
 
-  const scrollToIndex = useCallback(
-    (index) => {
-      const slider = sliderRef.current;
-      if (!slider) return;
-      const cards = slider.querySelectorAll(".book-card-wrapper");
-      const clamped = Math.max(0, Math.min(index, totalItems - 1));
-      if (!cards[clamped]) return;
-      const cardWidth = cards[0].offsetWidth;
-      const target = clamped * (cardWidth + getGap());
-      slider.scrollTo({ left: -target, behavior: "smooth" });
-      setCurrentIndex(clamped);
-    },
-    [getGap, totalItems]
-  );
-
-  const goPrev = () => scrollToIndex(currentIndex - 1);
-  const goNext = () => scrollToIndex(currentIndex + 1);
-
-  const snapToNearest = useCallback(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    const cards = slider.querySelectorAll(".book-card-wrapper");
-    if (!cards.length) return;
-    const cardWidth = cards[0].offsetWidth;
-    const pos = Math.abs(slider.scrollLeft);
-    const idx = Math.round(pos / (cardWidth + getGap()));
-    scrollToIndex(idx);
-  }, [getGap, scrollToIndex]);
-
-  const updateIndexFromScroll = useCallback(() => {
-    if (scrollRafRef.current) return;
-    scrollRafRef.current = requestAnimationFrame(() => {
-      scrollRafRef.current = null;
+  const nudge = useCallback(
+    (direction) => {
       const slider = sliderRef.current;
       if (!slider) return;
       const cards = slider.querySelectorAll(".book-card-wrapper");
       if (!cards.length) return;
       const cardWidth = cards[0].offsetWidth;
-      const pos = Math.abs(slider.scrollLeft);
-      const idx = Math.round(pos / (cardWidth + getGap()));
-      setCurrentIndex(Math.max(0, Math.min(idx, totalItems - 1)));
-    });
-  }, [getGap, totalItems]);
+      const amount = cardWidth + getGap();
+      slider.scrollBy({ left: -amount * direction, behavior: "smooth" });
+    },
+    [getGap]
+  );
+
+  const goForward = () => nudge(1);
+  const goBackward = () => nudge(-1);
 
   useEffect(() => {
     const slider = sliderRef.current;
@@ -156,8 +123,7 @@ function LatestBooks() {
     if (!dragRef.current.active) return;
     dragRef.current.active = false;
     setIsDragging(false);
-    snapToNearest();
-  }, [snapToNearest]);
+  }, []);
 
   const handleTouchStart = useCallback((e) => {
     if (!sliderRef.current) return;
@@ -185,8 +151,7 @@ function LatestBooks() {
 
   const handleTouchEnd = useCallback(() => {
     dragRef.current.active = false;
-    snapToNearest();
-  }, [snapToNearest]);
+  }, []);
 
   if (!latestBooks.length) {
     return (
@@ -232,20 +197,18 @@ function LatestBooks() {
 
         <div className="relative py-4">
           <button
-            onClick={goPrev}
-            disabled={!canPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
-            aria-label="حرکت به راست"
+            onClick={goForward}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95"
+            aria-label="کتاب بعدی"
             style={{ marginLeft: "-4px" }}
           >
             <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
 
           <button
-            onClick={goNext}
-            disabled={!canNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
-            aria-label="حرکت به چپ"
+            onClick={goBackward}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95"
+            aria-label="کتاب قبلی"
             style={{ marginRight: "-4px" }}
           >
             <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
@@ -254,7 +217,6 @@ function LatestBooks() {
           <div
             dir="rtl"
             ref={sliderRef}
-            onScroll={updateIndexFromScroll}
             onClickCapture={handleSliderClickCapture}
             onDragStart={handleDragStart}
             onMouseDown={handleMouseDown}
@@ -264,7 +226,7 @@ function LatestBooks() {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory py-4 px-6 sm:px-8 select-none
+            className={`flex gap-2.5 sm:gap-3 overflow-x-auto scroll-smooth py-4 px-6 sm:px-8 select-none
               [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
               ${isDragging ? "cursor-grabbing" : "cursor-grab"}
             `}
@@ -273,11 +235,11 @@ function LatestBooks() {
               <div
                 key={book.id}
                 draggable={false}
-                className="book-card-wrapper flex-none shrink-0 snap-start"
+                className="book-card-wrapper flex-none shrink-0"
                 style={{
                   width: `${cardWidthPercent}%`,
-                  minWidth: "140px",
-                  maxWidth: "210px",
+                  minWidth: "125px",
+                  maxWidth: "175px",
                 }}
               >
                 <BookCard book={book} />
@@ -285,21 +247,6 @@ function LatestBooks() {
             ))}
           </div>
         </div>
-
-        {totalItems > 1 && (
-          <div className="flex items-center justify-center gap-1.5 mt-2">
-            {latestBooks.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => scrollToIndex(i)}
-                aria-label={`رفتن به کتاب ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  currentIndex === i ? "w-6 bg-accent" : "w-1.5 bg-primary/20 hover:bg-primary/40"
-                }`}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
