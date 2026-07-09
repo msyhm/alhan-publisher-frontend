@@ -19,7 +19,7 @@ function FeaturedBook() {
   if (!book) return null;
 
   return (
-    <section className="py-16 sm:py-24 bg-primary-bg/50">
+    <section className="py-12 sm:py-16 md:py-24 bg-primary-bg/50 lg:hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* هدر */}
@@ -40,22 +40,22 @@ function FeaturedBook() {
 
         {/* کارت اصلی */}
         <div className="bg-white rounded-3xl shadow-elegant-hover overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2">
+          <div className="grid grid-cols-2">
 
             {/* ─── تصویر ─── */}
-            <div className="relative bg-gradient-primary overflow-hidden min-h-[320px] lg:min-h-0">
+            <div className="relative bg-gradient-primary overflow-hidden">
               {/* پس‌زمینه تزئینی */}
               <div className="absolute inset-0">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 rounded-full blur-2xl" />
               </div>
 
-              <div className="relative flex items-center justify-center h-full py-12 px-8">
+              <div className="relative flex items-center justify-center h-full py-6 px-3 sm:py-12 sm:px-8">
                 <div className="relative">
                   {/* سایه پشت جلد */}
                   <div className="absolute inset-0 bg-accent/30 rounded-2xl blur-2xl scale-105 opacity-60" />
                   {/* جلد کتاب */}
-                  <div className="relative w-48 sm:w-56 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-500">
+                  <div className="relative w-32 sm:w-48 md:w-56 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-500">
                     <img
                       src={book.image}
                       alt={book.title}
@@ -79,7 +79,7 @@ function FeaturedBook() {
             </div>
 
             {/* ─── اطلاعات ─── */}
-            <div className="flex flex-col justify-center p-8 sm:p-12">
+            <div className="flex flex-col justify-center p-4 sm:p-8 md:p-12">
 
               {book.category && (
                 <span className="inline-block self-start bg-accent/10 text-accent text-sm font-bold px-3 py-1 rounded-full mb-4">
