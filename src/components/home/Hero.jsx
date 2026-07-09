@@ -1,15 +1,13 @@
 import Icon from "../ui/Icon";
 import { Link } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import useSiteSettings from "../../hooks/useSiteSettings";
 import useBooks from "../../hooks/useBooks";
-import useAuthors from "../../hooks/useAuthors";
 
 function Hero() {
   const [isVisible, setIsVisible] = useState(false);
   const { settings } = useSiteSettings();
   const { books }    = useBooks();
-  const { authors }  = useAuthors();
 
   useEffect(() => { setIsVisible(true); }, []);
 
@@ -17,20 +15,6 @@ function Hero() {
     ? books.find((b) => String(b.id) === String(settings.featuredBookId))
     : books[books.length - 1] || null; // ✅ اگر ادمین انتخاب نکرده، آخرین کتاب
 
-  // ✅ آمار واقعی — محاسبه از داده زنده
-  const liveStats = useMemo(() => {
-    const foundingYear = parseInt(
-      (settings.foundingYear || "۱۳۹۸").replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)),
-      10
-    ) || 1398;
-    const yearsActive = Math.max(1, 1404 - foundingYear);
-
-    return [
-      { value: `${books.length}+`,   label: settings.heroStat1Label || "کتاب منتشر شده"  },
-      { value: `${authors.length}+`, label: settings.heroStat2Label || "نویسنده همکار"   },
-      { value: `${yearsActive}+`,    label: settings.heroStat3Label || "سال فعالیت"      },
-    ];
-  }, [books, authors, settings]);
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-primary">
@@ -77,15 +61,6 @@ function Hero() {
               </Link>
             </div>
 
-            {/* ✅ آمار واقعی از useBooks و useAuthors */}
-            <div className="flex flex-wrap gap-8 pt-6">
-              {liveStats.map((stat) => (
-                <div key={stat.label} className="group">
-                  <span className="block text-3xl font-bold text-white">{stat.value}</span>
-                  <span className="text-sm text-primary-light group-hover:text-accent-light transition-colors">{stat.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* ===== ستون راست: کارت کتاب ===== */}
