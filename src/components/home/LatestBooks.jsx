@@ -114,7 +114,7 @@ function LatestBooks() {
     const slider = sliderRef.current;
     const rect = slider.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const walk = (x - dragRef.current.startX) * 1.5;
+    const walk = (x - dragRef.current.startX) * 1;
     if (Math.abs(walk) > DRAG_THRESHOLD) dragRef.current.moved = true;
     slider.scrollLeft = dragRef.current.scrollLeft - walk;
   }, []);
@@ -144,7 +144,7 @@ function LatestBooks() {
     const rect = slider.getBoundingClientRect();
     const touch = e.touches[0];
     const x = touch.clientX - rect.left;
-    const walk = (x - dragRef.current.startX) * 1.5;
+    const walk = (x - dragRef.current.startX) * 1;
     if (Math.abs(walk) > DRAG_THRESHOLD) dragRef.current.moved = true;
     slider.scrollLeft = dragRef.current.scrollLeft - walk;
   }, []);
@@ -226,7 +226,7 @@ function LatestBooks() {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`flex gap-2.5 sm:gap-3 overflow-x-auto scroll-smooth py-4 px-6 sm:px-8 select-none
+            className={`flex gap-2.5 sm:gap-3 overflow-x-auto py-4 px-6 sm:px-8 select-none
               [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
               ${isDragging ? "cursor-grabbing" : "cursor-grab"}
             `}
@@ -242,7 +242,7 @@ function LatestBooks() {
                   maxWidth: "175px",
                 }}
               >
-                <BookCard book={book} />
+                <BookCard book={book} aspectClass="aspect-[2/3.75]" />
               </div>
             ))}
           </div>

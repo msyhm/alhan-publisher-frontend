@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import Icon from "../ui/Icon";
 import { useState } from "react";
 
-function BookCard({ book }) {
+function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
   const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const hasImage = Boolean(book.image) && !imgError;
@@ -17,7 +17,7 @@ function BookCard({ book }) {
       <div className="bg-white rounded-2xl shadow-card hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col relative border border-primary/5">
 
         {/* ===== تصویر ===== */}
-        <div className="relative overflow-hidden bg-primary-bg aspect-[2/3] w-full shrink-0">
+        <div className={`relative overflow-hidden bg-primary-bg w-full shrink-0 ${aspectClass}`}>
           {hasImage ? (
             <>
               {/* پس‌زمینه‌ی محوشده از همان تصویر — فضای خالی احتمالی رو با رنگ/جلوه‌ی هماهنگ با خود تصویر پر می‌کنه */}
