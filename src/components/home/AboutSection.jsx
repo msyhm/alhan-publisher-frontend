@@ -2,6 +2,14 @@ import Icon from "../ui/Icon";
 import { Link } from "react-router-dom";
 import useSiteSettings from "../../hooks/useSiteSettings";
 
+// ✅ به‌جای آمار خام (که برای یک انتشارات تازه‌کار چندان چشمگیر نیست)،
+// چند نکته‌ی متقاعدکننده که هم به فروش کتاب کمک می‌کند هم نویسنده جذب می‌کند
+const VALUE_PROPS = [
+  { icon: "academic", title: "داوری تخصصی",       desc: "بررسی دقیق هر اثر توسط ویراستاران مجرب، پیش از چاپ" },
+  { icon: "document",  title: "چاپ حرفه‌ای",       desc: "چاپ باکیفیت، مطابق استانداردهای نشر دانشگاهی" },
+  { icon: "target",    title: "دیده‌شدن اثر شما",  desc: "معرفی و فروش کتاب از طریق کانال‌های انتشارات" },
+];
+
 function AboutSection() {
   const { settings } = useSiteSettings();
 
@@ -10,20 +18,45 @@ function AboutSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="relative order-2 lg:order-1">
-            <div className="relative bg-gradient-primary rounded-3xl p-8 shadow-elegant-hover overflow-hidden">
+            <div className="relative bg-gradient-primary rounded-3xl p-6 sm:p-8 shadow-elegant-hover overflow-hidden">
               <div className="absolute inset-0 bg-accent/10 blur-2xl"></div>
-              <div className="relative grid grid-cols-2 gap-4">
-                {settings.stats.map((stat, i) => (
-                  <div key={i} className={`bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10 ${i % 2 === 1 ? "mt-8" : ""}`}>
-                    <Icon name={stat.icon} size={32} strokeWidth={1.25} className="mx-auto text-accent" />
-                    <span className="text-white font-bold text-lg block mt-2">{stat.value}{stat.suffix}</span>
-                    <span className="text-primary-light text-sm">{stat.title}</span>
-                  </div>
-                ))}
+
+              <div className="relative">
+                <h3 className="text-white font-bold text-lg">چرا انتشارات الحان؟</h3>
+                <p className="text-primary-light text-xs mt-1 mb-5">
+                  از ثبت ایده تا رسیدن کتاب به دست خواننده، همراه شما هستیم
+                </p>
+
+                <div className="space-y-3">
+                  {VALUE_PROPS.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10"
+                    >
+                      <div className="shrink-0 w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
+                        <Icon name={item.icon} size={20} strokeWidth={1.5} className="text-accent" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-sm">{item.title}</h4>
+                        <p className="text-primary-light text-xs mt-0.5 leading-relaxed">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  to="/submit-book"
+                  className="mt-5 flex items-center justify-center gap-2 bg-accent text-white font-bold text-sm py-3 rounded-xl hover:bg-accent-dark transition-colors"
+                >
+                  ارسال اثر برای بررسی
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
             </div>
             <div className="absolute -top-4 -right-4 w-20 h-20 bg-accent rounded-2xl shadow-lg flex items-center justify-center animate-float">
-              <span className="text-3xl"></span>
+              <Icon name="book-open" size={28} strokeWidth={1.5} className="text-white" />
             </div>
           </div>
 

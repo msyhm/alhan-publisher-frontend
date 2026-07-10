@@ -109,8 +109,7 @@ function UniversitiesSection() {
         />
 
         <p className="text-[13.5px] leading-[1.8] m-0" style={{ color: "rgba(255,255,255,0.45)" }}>
-          {/* ✅ تعداد واقعی از settings */}
-          افتخار همکاری با اساتید برجسته {universities.length} دانشگاه معتبر کشور را داریم
+          افتخار همکاری با اساتید برجسته دانشگاه های معتبر کشور را داریم
         </p>
       </div>
 
