@@ -2,6 +2,7 @@ import PageMeta from "../components/PageMeta";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useSiteSettings from "../hooks/useSiteSettings";
+import logoWhite from "../assets/logo-white.png";
 
 function NotFound() {
   const navigate = useNavigate();
@@ -29,10 +30,8 @@ function NotFound() {
           ۴۰۴
         </p>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-gold rounded-3xl rotate-12 flex items-center justify-center shadow-2xl">
-            <span className="text-white font-black text-4xl sm:text-5xl -rotate-12">
-              {settings.logoLetter || "آ"}
-            </span>
+          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-gold rounded-3xl rotate-12 flex items-center justify-center shadow-2xl p-5 sm:p-7">
+            <img src={logoWhite} alt="انتشارات الحان" className="w-full h-full object-contain -rotate-12" />
           </div>
         </div>
       </div>
@@ -88,8 +87,8 @@ function NotFound() {
 
       {/* لوگو پایین */}
       <div className="mt-12 flex items-center gap-2 text-text-muted text-sm">
-        <div className="w-7 h-7 bg-gradient-gold rounded-lg flex items-center justify-center shadow">
-          <span className="text-white font-bold text-xs">{settings.logoLetter || "آ"}</span>
+        <div className="w-7 h-7 bg-gradient-gold rounded-lg flex items-center justify-center shadow p-1">
+          <img src={logoWhite} alt="انتشارات الحان" className="w-full h-full object-contain" />
         </div>
         <span>
           {settings.publisherName} {settings.publisherNameAccent}

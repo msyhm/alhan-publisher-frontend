@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import useSiteSettings from "../../hooks/useSiteSettings";
+import logoWhite from "../../assets/logo-white.png";
 
 function Footer() {
   const currentYear = new Date().getFullYear();
@@ -18,8 +19,8 @@ function Footer() {
           {/* درباره */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">{settings.logoLetter}</span>
+              <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center shadow-lg p-2">
+                <img src={logoWhite} alt={settings.publisherName + " " + settings.publisherNameAccent} className="w-full h-full object-contain" />
               </div>
               <div>
                 <h2 className="text-xl font-bold leading-tight">{settings.publisherName}</h2>

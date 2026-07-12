@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import useSiteSettings from "../../hooks/useSiteSettings";
 import useBooks from "../../hooks/useBooks";
+import logoWhite from "../../assets/logo-white.png";
 
 function Hero() {
   const [isVisible, setIsVisible] = useState(false);
@@ -87,10 +88,10 @@ function Hero() {
                       ) : null}
                       {/* fallback: حرف لوگو */}
                       <div
-                        className="w-full h-full bg-gradient-gold flex items-center justify-center"
+                        className="w-full h-full bg-gradient-gold flex items-center justify-center p-10"
                         style={{ display: featuredBook && featuredBook.image ? "none" : "flex" }}
                       >
-                        <span className="text-white text-6xl font-bold">{settings.logoLetter}</span>
+                        <img src={logoWhite} alt="انتشارات الحان" className="w-full h-full object-contain" />
                       </div>
                     </div>
 
