@@ -5,7 +5,6 @@ import LatestBooks from "../components/home/LatestBooks";
 import UniversitiesSection from "../components/home/UniversitiesSection";
 import FeaturedBook from "../components/home/FeaturedBook";
 import AuthorsSection from "../components/home/AuthorsSection";
-// ✅ FIX: جایگزین StatsSection (آمار تکراری با Hero) با بخش «چرا الحان؟»
 import WhyAlhan from "../components/home/WhyAlhan";
 
 function Home() {
