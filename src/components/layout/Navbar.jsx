@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useBooks from "../../hooks/useBooks";
 import Icon from "../ui/Icon";
-import logoWhite from "../../assets/logo-white.png";
+import logoBlack from "../../assets/logo-black.png";
 
 const links = [
   { to: "/",            label: "خانه",       icon: "home"   },
@@ -148,9 +148,11 @@ function Navbar() {
         {/* ===== دسکتاپ ===== */}
         <div className="hidden md:flex justify-between items-center gap-6">
           <Link to="/" className="group flex items-center gap-2 shrink-0">
-            <div className="w-10 h-10 bg-gradient-gold rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 p-1.5">
-              <img src={logoWhite} alt="انتشارات الحان" className="w-full h-full object-contain" />
-            </div>
+            <img
+              src={logoBlack}
+              alt="انتشارات الحان"
+              className="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+            />
             <div>
               <span className="text-xl font-bold text-primary block leading-tight">انتشارات</span>
               <span className="text-sm font-bold text-accent block leading-tight -mt-0.5">الحان</span>
@@ -257,9 +259,11 @@ function Navbar() {
             onClick={() => { setOpen(false); setIsSearchOpen(false); }}
             className="justify-self-center flex items-center gap-2"
           >
-            <div className="w-8 h-8 bg-gradient-gold rounded-lg flex items-center justify-center p-1">
-              <img src={logoWhite} alt="انتشارات الحان" className="w-full h-full object-contain" />
-            </div>
+            <img
+              src={logoBlack}
+              alt="انتشارات الحان"
+              className="h-8 w-auto object-contain"
+            />
             <div>
               <span className="text-base font-bold text-primary block leading-tight">انتشارات</span>
               <span className="text-xs font-bold text-accent block leading-tight -mt-0.5">الحان</span>

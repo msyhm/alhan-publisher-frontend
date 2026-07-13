@@ -19,9 +19,11 @@ function Footer() {
           {/* درباره */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center shadow-lg p-2">
-                <img src={logoWhite} alt={settings.publisherName + " " + settings.publisherNameAccent} className="w-full h-full object-contain" />
-              </div>
+              <img
+                src={logoWhite}
+                alt={settings.publisherName + " " + settings.publisherNameAccent}
+                className="h-14 w-auto object-contain"
+              />
               <div>
                 <h2 className="text-xl font-bold leading-tight">{settings.publisherName}</h2>
                 <span className="text-accent-light font-bold text-lg leading-tight -mt-1 block">{settings.publisherNameAccent}</span>
