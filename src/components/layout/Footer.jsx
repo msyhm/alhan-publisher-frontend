@@ -126,9 +126,8 @@ function Footer() {
           <div className="flex items-center gap-4 text-xs">
             <span>شماره پروانه نشر: {settings.publishLicense}</span>
             <span className="w-px h-4 bg-white/20"></span>
-            <span>طراحی و توسعه: تیم الحان</span>
+            <span>طراحی و توسعه: حسین ملائی</span>
             <span className="w-px h-4 bg-white/20"></span>
-            <Link to="/admin/login" className="hover:text-white transition-colors">پنل مدیریت</Link>
           </div>
         </div>
       </div>
