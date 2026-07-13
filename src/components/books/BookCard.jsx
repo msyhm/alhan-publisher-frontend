@@ -73,15 +73,6 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
               چاپ {book.edition}
             </span>
           )}
-
-          {/* دکمه مشاهده سریع در هاور */}
-          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
-            isHovered ? "opacity-100" : "opacity-0"
-          }`}>
-            <span className="bg-white/95 backdrop-blur-md text-primary font-bold px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl shadow-2xl border border-white/20 hover:bg-primary hover:text-white transition-all transform hover:scale-105">
-              مشاهده کتاب
-            </span>
-          </div>
         </div>
 
         {/* ===== محتوا ===== */}
@@ -101,7 +92,7 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
           </p>
 
           {/* سال و صفحات */}
-          <div className="mt-2 sm:mt-3 flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-text-muted">
+          <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] sm:text-xs text-text-muted">
             {book.year && (
               <span className="flex items-center gap-1">
                 <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,20 +109,10 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
                 {book.pages} صفحه
               </span>
             )}
-            {/* ✅ شابک کوتاه‌شده */}
-            {book.isbn && (
-              <span className="flex items-center gap-1 truncate" title={`شابک: ${book.isbn}`}>
-                <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                {book.isbn}
-              </span>
-            )}
           </div>
 
-          {/* ✅ قیمت + دکمه — پایین کارت */}
-          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-primary-light/10 flex items-center justify-between gap-2">
-            {/* قیمت */}
+          {/* ✅ قیمت + دکمه — زیر هم، نه کنار هم، تا رو کارت‌های باریک روی هم نیفتن */}
+          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-primary-light/10 flex flex-col gap-2">
             <div className="min-w-0">
               {book.price ? (
                 <p className="text-sm font-bold text-accent">
@@ -143,8 +124,7 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
               )}
             </div>
 
-            {/* دکمه جزئیات */}
-            <span className="shrink-0 text-center bg-primary-bg text-primary font-medium text-xs px-3 py-2 rounded-xl group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-lg whitespace-nowrap">
+            <span className="w-full text-center bg-primary-bg text-primary font-medium text-xs px-3 py-2 rounded-xl group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-lg whitespace-nowrap">
               مشاهده جزئیات
             </span>
           </div>
