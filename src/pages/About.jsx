@@ -1,9 +1,7 @@
 import Icon from "../components/ui/Icon";
 import PageMeta from "../components/PageMeta";
 import { Link } from "react-router-dom";
-import { useMemo } from "react";
 import useBooks from "../hooks/useBooks";
-import useAuthors from "../hooks/useAuthors";
 import useSiteSettings from "../hooks/useSiteSettings";
 
 const timeline = [
@@ -22,29 +20,8 @@ const teamMembers = [
 ];
 
 function About() {
-  const { books }   = useBooks();
-  const { authors } = useAuthors();
-  const { settings } = useSiteSettings();
-
-  // ✅ آمار واقعی — محاسبه از داده‌های زنده
-  const stats = useMemo(() => {
-    const totalBooks   = books.length;
-    const audioBooks   = books.filter((b) => b.isAudio).length;
-    const activeAuthors = authors.filter((a) => a.status === "active").length;
-
-    // سال‌های فعالیت از تنظیمات سایت
-    const foundingYear = parseInt(settings.foundingYear?.replace(/[۰-۹]/g, (d) =>
-      "۰۱۲۳۴۵۶۷۸۹".indexOf(d)), 10) || 1398;
-    const currentYear  = 1404; // سال شمسی جاری
-    const yearsActive  = Math.max(1, currentYear - foundingYear);
-
-    return [
-      { icon: "books",      value: `${totalBooks}+`,   label: "کتاب منتشر شده"  },
-      { icon: "pen",        value: `${activeAuthors}+`, label: "نویسنده همکار"   },
-      { icon: "academic",   value: yearsActive,         label: "سال فعالیت"      },
-      { icon: "headphones", value: `${audioBooks}+`,    label: "کتاب صوتی"       },
-    ];
-  }, [books, authors, settings.foundingYear]);
+  const { books }     = useBooks();
+  const { settings }  = useSiteSettings();
 
   return (
     <>
@@ -68,63 +45,78 @@ function About() {
       </div>
 
       {/* ===== داستان ما ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+      <div className="max-w-3xl mx-auto mb-20">
+        <h2 className="text-3xl font-bold text-primary mb-6 text-center">داستان ما</h2>
+        <div className="space-y-4 text-text-secondary leading-relaxed">
+          <p>
+            انتشارات {settings.publisherName} {settings.publisherNameAccent} در
+            سال {settings.foundingYear || "۱۳۹۸"} با هدف انتشار آثار علمی، دانشگاهی و فرهنگی
+            فعالیت خود را آغاز کرد. از همان ابتدا، ما به دنبال کشف و معرفی
+            اندیشه‌های نوین و ارتقای سطح دانش و فرهنگ جامعه بودیم.
+          </p>
+          <p>
+            {settings.aboutText ||
+              `با بهره‌گیری از اساتید و پژوهشگران برجسته، آثاری با کیفیت و محتوای غنی
+              را به جامعه علمی و فرهنگی کشور عرضه می‌کنیم. تاکنون بیش از ${books.length} کتاب
+              در حوزه‌های مختلف منتشر کرده‌ایم.`}
+          </p>
+        </div>
+      </div>
 
-        {/* ✅ کارت‌های آماری — داده واقعی */}
-        <div className="relative">
-          <div className="bg-gradient-primary rounded-3xl p-8 shadow-elegant-hover">
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className={`bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10 ${
-                    i % 2 !== 0 ? "mt-8" : ""
-                  }`}
-                >
-                  <Icon name={stat.icon} size={40} strokeWidth={1} className="mx-auto text-accent" />
-                  <span className="text-white font-bold text-2xl block mt-2">{stat.value}</span>
-                  <span className="text-primary-light text-sm">{stat.label}</span>
+      {/* ===== تیم ===== */}
+      <div className="mb-20">
+        <h2 className="text-2xl font-bold text-primary text-center mb-10">
+          تیم انتشارات الحان
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {teamMembers.map((member, index) => (
+            <div
+              key={member.name}
+              className="bg-white rounded-3xl shadow-card hover:shadow-elegant-hover transition-all overflow-hidden group animate-fade-up"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="bg-primary-bg h-48 flex items-center justify-center relative overflow-hidden">
+                <div className="w-32 h-32 rounded-full bg-gradient-gold flex items-center justify-center text-6xl text-white shadow-lg group-hover:scale-110 transition-transform duration-500">
+                  {member.name.charAt(0)}
                 </div>
-              ))}
+              </div>
+              <div className="p-6 text-center">
+                <h3 className="font-bold text-primary text-lg">{member.name}</h3>
+                <p className="text-accent text-sm font-medium">{member.role}</p>
+                <p className="text-text-muted text-xs mt-2">{member.bio}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== چشم‌انداز و رسالت — به‌جای باکس آماری قبلی ===== */}
+      <div className="mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="relative bg-gradient-primary rounded-3xl p-8 shadow-elegant-hover overflow-hidden">
+            <div className="absolute inset-0 bg-accent/10 blur-2xl" />
+            <div className="relative">
+              <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
+                <Icon name="target" size={28} strokeWidth={1.5} className="text-accent" />
+              </div>
+              <h3 className="text-white font-bold text-xl mb-2">چشم‌انداز ما</h3>
+              <p className="text-primary-light leading-relaxed">
+                {settings.vision || "تبدیل شدن به یکی از برترین ناشران علمی و فرهنگی در سطح ملی و ایجاد پلی میان دانشگاه و جامعه"}
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* متن داستان */}
-        <div>
-          <h2 className="text-3xl font-bold text-primary mb-6">داستان ما</h2>
-          <div className="space-y-4 text-text-secondary leading-relaxed">
-            <p>
-              انتشارات {settings.publisherName} {settings.publisherNameAccent} در
-              سال {settings.foundingYear || "۱۳۹۸"} با هدف انتشار آثار علمی، دانشگاهی و فرهنگی
-              فعالیت خود را آغاز کرد. از همان ابتدا، ما به دنبال کشف و معرفی
-              اندیشه‌های نوین و ارتقای سطح دانش و فرهنگ جامعه بودیم.
-            </p>
-            <p>
-              {settings.aboutText ||
-                `با بهره‌گیری از اساتید و پژوهشگران برجسته، آثاری با کیفیت و محتوای غنی
-                را به جامعه علمی و فرهنگی کشور عرضه می‌کنیم. تاکنون بیش از ${books.length} کتاب
-                در حوزه‌های مختلف منتشر کرده‌ایم.`}
-            </p>
-            <p>
-              {settings.vision
-                ? `چشم‌انداز ما: ${settings.vision}`
-                : "چشم‌انداز ما تبدیل شدن به یکی از برترین ناشران علمی و فرهنگی در سطح ملی و ایجاد پلی میان دانشگاه و جامعه است."}
-            </p>
-          </div>
-
-          {/* ✅ نشانگرهای زنده */}
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            {[
-              { value: books.length,                         label: "کتاب"    },
-              { value: authors.filter(a=>a.status==="active").length, label: "نویسنده" },
-              { value: books.filter(b=>b.isAudio).length,   label: "صوتی"    },
-            ].map((s) => (
-              <div key={s.label} className="bg-primary-bg rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-accent">{s.value}</p>
-                <p className="text-xs text-text-muted">{s.label}</p>
+          <div className="relative bg-gradient-primary rounded-3xl p-8 shadow-elegant-hover overflow-hidden">
+            <div className="absolute inset-0 bg-accent/10 blur-2xl" />
+            <div className="relative">
+              <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
+                <Icon name="lamp" size={28} strokeWidth={1.5} className="text-accent" />
               </div>
-            ))}
+              <h3 className="text-white font-bold text-xl mb-2">رسالت ما</h3>
+              <p className="text-primary-light leading-relaxed">
+                {settings.mission || "انتشار آثار ارزشمند و ارتقای دانش و فرهنگ جامعه"}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -162,33 +154,6 @@ function About() {
         </div>
       </div>
 
-      {/* ===== تیم ===== */}
-      <div className="mb-20">
-        <h2 className="text-2xl font-bold text-primary text-center mb-10">
-          تیم انتشارات الحان
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teamMembers.map((member, index) => (
-            <div
-              key={member.name}
-              className="bg-white rounded-3xl shadow-card hover:shadow-elegant-hover transition-all overflow-hidden group animate-fade-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="bg-primary-bg h-48 flex items-center justify-center relative overflow-hidden">
-                <div className="w-32 h-32 rounded-full bg-gradient-gold flex items-center justify-center text-6xl text-white shadow-lg group-hover:scale-110 transition-transform duration-500">
-                  {member.name.charAt(0)}
-                </div>
-              </div>
-              <div className="p-6 text-center">
-                <h3 className="font-bold text-primary text-lg">{member.name}</h3>
-                <p className="text-accent text-sm font-medium">{member.role}</p>
-                <p className="text-text-muted text-xs mt-2">{member.bio}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* ===== CTA ===== */}
       <div className="bg-gradient-primary rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -221,6 +186,5 @@ function About() {
   </>
   );
 }
-
 
 export default About;
