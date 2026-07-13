@@ -127,7 +127,6 @@ function Footer() {
             <span>شماره پروانه نشر: {settings.publishLicense}</span>
             <span className="w-px h-4 bg-white/20"></span>
             <span>طراحی و توسعه: حسین ملائی</span>
-            <span className="w-px h-4 bg-white/20"></span>
           </div>
         </div>
       </div>
