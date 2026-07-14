@@ -1,9 +1,12 @@
 import PageMeta from "../components/PageMeta";
 import Icon from "../components/ui/Icon";
+import BookCard from "../components/books/BookCard";
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import useBooks from "../hooks/useBooks";
 import useSiteSettings from "../hooks/useSiteSettings";
+import reviewsService from "../services/reviewsService";
 import InlineError from "../components/InlineError";
 
 // ─── مودال «تماس برای خرید» ────────────────────────────────────────────────
@@ -22,7 +25,6 @@ function BuyModal({ book, onClose }) {
           <p className="text-text-muted text-sm mt-1">{book.title}</p>
         </div>
 
-        {/* قیمت */}
         <div className="bg-primary-bg rounded-2xl p-4 text-center mb-6">
           {book.price ? (
             <>
@@ -36,7 +38,6 @@ function BuyModal({ book, onClose }) {
           )}
         </div>
 
-        {/* راه‌های تماس */}
         <div className="space-y-3">
           {settings.phone && (
             <a
@@ -86,79 +87,111 @@ function InfoRow({ label, value }) {
   );
 }
 
-// ─── کارت کتاب مرتبط ───────────────────────────────────────────────────────
-function RelatedBookCard({ book: rel }) {
+// ─── ستاره‌های امتیاز (نمایش) ───────────────────────────────────────────────
+function StarsDisplay({ value, size = "w-4 h-4" }) {
   return (
-    <Link
-      to={`/books/${rel.id}`}
-      className="group bg-white rounded-2xl shadow-card hover:shadow-elegant-hover transition-all overflow-hidden hover:-translate-y-2"
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg
+          key={n}
+          className={`${size} ${n <= Math.round(value) ? "text-accent" : "text-primary-light/30"}`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.062 9.385c-.783-.57-.38-1.81.588-1.81h4.163a1 1 0 00.95-.69l1.286-3.958z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+// ─── ستاره‌های امتیاز (ورودی/انتخاب) ────────────────────────────────────────
+function StarsInput({ value, onChange }) {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          className="p-0.5"
+          aria-label={`${n} ستاره`}
+        >
+          <svg
+            className={`w-6 h-6 transition-colors ${n <= value ? "text-accent" : "text-primary-light/30 hover:text-accent/50"}`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.062 9.385c-.783-.57-.38-1.81.588-1.81h4.163a1 1 0 00.95-.69l1.286-3.958z" />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── ردیف افقی کارت‌های مرتبط (موبایل: اسکرول افقی، دسکتاپ: گرید) ──────────
+function RelatedBooksRow({ books }) {
+  return (
+    <div
+      className="flex sm:grid sm:grid-cols-2 md:grid-cols-4 gap-4 overflow-x-auto sm:overflow-visible
+        pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <div className="overflow-hidden h-40">
-        <img
-          src={rel.image}
-          alt={rel.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-      </div>
-      <div className="p-4">
-        <h4 className="font-bold text-primary text-sm group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem]">
-          {rel.title}
-        </h4>
-        <p className="text-xs text-text-muted mt-1 truncate">{rel.authorName}</p>
-        <div className="flex items-center justify-between mt-2">
-          {rel.edition && (
-            <span className="text-[10px] bg-primary-bg text-primary px-2 py-0.5 rounded-full">
-              چاپ {rel.edition}
-            </span>
-          )}
-          {rel.price ? (
-            <p className="text-xs font-bold text-accent mr-auto">
-              {Number(rel.price).toLocaleString("fa-IR")} تومان
-            </p>
-          ) : (
-            <p className="text-[10px] text-text-muted mr-auto">تماس برای خرید</p>
-          )}
+      {books.map((rel) => (
+        <div key={rel.id} className="w-[45%] xs:w-[38%] sm:w-auto shrink-0 sm:shrink">
+          <BookCard book={rel} aspectClass="aspect-[5/6]" />
         </div>
-      </div>
-    </Link>
+      ))}
+    </div>
   );
 }
 
 // ─── صفحه اصلی ─────────────────────────────────────────────────────────────
 function BookDetail() {
   const { id } = useParams();
-  // ✅ loading واقعی از hook به جای useState ساختگی
   const { books, loading: booksLoading, error: booksError } = useBooks();
   const [book,         setBook]         = useState(null);
   const [sameAuthor,   setSameAuthor]   = useState([]);
   const [sameCategory, setSameCategory] = useState([]);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [copied,       setCopied]       = useState(false);
+  const [activeImage,  setActiveImage]  = useState(0);
+
+  const [reviews,         setReviews]         = useState([]);
+  const [reviewName,      setReviewName]      = useState("");
+  const [reviewRating,    setReviewRating]    = useState(0);
+  const [reviewComment,   setReviewComment]   = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    // ✅ تا زمانی که hook هنوز در حال لود است، منتظر می‌مانیم
     if (booksLoading) return;
 
     const found = books.find((item) => String(item.id) === id);
     setBook(found || null);
+    setActiveImage(0);
+
     if (found) {
-      // ✅ جداسازی «همین نویسنده» از «همین دسته»
       const others = books.filter((b) => String(b.id) !== id);
-
-      // اول کتاب‌های همین نویسنده
-      const byAuthor = others
-        .filter((b) => b.authorName === found.authorName)
-        .slice(0, 4);
-
-      // بعد کتاب‌های همین دسته (که نویسنده‌شان متفاوت است)
+      const byAuthor = others.filter((b) => b.authorName === found.authorName).slice(0, 8);
       const byCategory = others
         .filter((b) => b.category === found.category && b.authorName !== found.authorName)
-        .slice(0, 4);
-
+        .slice(0, 8);
       setSameAuthor(byAuthor);
       setSameCategory(byCategory);
     }
   }, [id, books, booksLoading]);
+
+  useEffect(() => {
+    if (!book) return;
+    reviewsService
+      .getForBook(book.id)
+      .then((res) => setReviews(Array.isArray(res?.reviews) ? res.reviews : []))
+      .catch(() => setReviews([]));
+  }, [book]);
+
+  const avgRating = reviews.length
+    ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+    : 0;
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href).then(() => {
@@ -173,7 +206,30 @@ function BookDetail() {
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
-  // ✅ خطای دریافت کتاب‌ها
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewName.trim() || !reviewComment.trim()) {
+      toast.error("نام و متن نظر الزامی است");
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await reviewsService.create(book.id, {
+        name:    reviewName.trim(),
+        rating:  reviewRating || undefined,
+        comment: reviewComment.trim(),
+      });
+      toast.success("نظر شما ثبت شد و پس از بررسی نمایش داده می‌شود");
+      setReviewName("");
+      setReviewComment("");
+      setReviewRating(0);
+    } catch (err) {
+      toast.error("ثبت نظر آنلاین هنوز فعال نشده — به‌زودی");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   if (booksError) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 pt-28">
@@ -211,9 +267,12 @@ function BookDetail() {
     );
   }
 
+  const gallery = Array.isArray(book.images) && book.images.length > 0
+    ? book.images
+    : (book.image ? [book.image] : []);
+
   return (
     <>
-      {/* ✅ Meta داینامیک بر اساس اطلاعات هر کتاب */}
       <PageMeta
         title={book.title}
         description={book.description ? book.description.slice(0, 160) : `کتاب ${book.title} نوشته ${book.authorName}`}
@@ -237,11 +296,24 @@ function BookDetail() {
       {/* ===== جزئیات اصلی ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
 
-        {/* ─── ستون تصویر ─── */}
+        {/* ─── ستون تصویر / گالری ─── */}
         <div className="lg:col-span-2">
           <div className="sticky top-8">
-            <div className="relative bg-primary-bg rounded-3xl overflow-hidden shadow-elegant-hover">
-              <img src={book.image} alt={book.title} className="w-full h-auto object-cover" />
+            <div className="relative bg-primary-bg rounded-3xl overflow-hidden shadow-elegant-hover aspect-[2/3]">
+              {gallery.length > 0 ? (
+                <img
+                  src={gallery[activeImage]}
+                  alt={book.title}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-primary/20">
+                  <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                  </svg>
+                </div>
+              )}
               {book.category && (
                 <span className="absolute top-4 right-4 bg-accent text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
                   {book.category}
@@ -255,15 +327,28 @@ function BookDetail() {
               )}
             </div>
 
-            {/* دکمه‌های اشتراک‌گذاری — حالا عملکردی */}
+            {gallery.length > 1 && (
+              <div className="flex gap-2 mt-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {gallery.map((src, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    className={`shrink-0 w-16 aspect-[2/3] rounded-lg overflow-hidden border-2 transition-colors ${
+                      i === activeImage ? "border-accent" : "border-transparent opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={src} alt={`${book.title} ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex gap-3 mt-4 justify-center">
               <button
                 onClick={handleShare}
                 title={copied ? "لینک کپی شد!" : "کپی لینک"}
                 className={`w-12 h-12 rounded-full transition-all flex items-center justify-center ${
-                  copied
-                    ? "bg-green-100 text-green-600"
-                    : "bg-primary-bg hover:bg-primary hover:text-white text-primary"
+                  copied ? "bg-green-100 text-green-600" : "bg-primary-bg hover:bg-primary hover:text-white text-primary"
                 }`}
               >
                 {copied ? (
@@ -292,7 +377,6 @@ function BookDetail() {
         {/* ─── ستون اطلاعات ─── */}
         <div className="lg:col-span-3 space-y-6">
 
-          {/* عنوان، نویسنده، سال */}
           <div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary leading-tight">
               {book.title}
@@ -309,10 +393,16 @@ function BookDetail() {
                   چاپ {book.edition}
                 </span>
               )}
+              {reviews.length > 0 && (
+                <span className="flex items-center gap-1.5 text-sm text-text-secondary">
+                  <StarsDisplay value={avgRating} />
+                  <span className="font-bold text-primary">{avgRating.toFixed(1)}</span>
+                  <span className="text-text-muted">({reviews.length} نظر)</span>
+                </span>
+              )}
             </div>
           </div>
 
-          {/* ✅ قیمت — برجسته */}
           <div className="bg-gradient-to-l from-accent/5 to-primary/5 border border-accent/20 rounded-2xl p-5 flex items-center justify-between">
             <div>
               <p className="text-xs text-text-muted mb-1">قیمت کتاب</p>
@@ -325,10 +415,7 @@ function BookDetail() {
                 <p className="text-base font-bold text-primary">تماس برای خرید</p>
               )}
             </div>
-            <button
-              onClick={() => setShowBuyModal(true)}
-              className="btn-gold flex items-center gap-2"
-            >
+            <button onClick={() => setShowBuyModal(true)} className="btn-gold flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -336,7 +423,6 @@ function BookDetail() {
             </button>
           </div>
 
-          {/* ✅ جدول اطلاعات نشر — شامل فیلدهای جدید */}
           <div className="bg-white rounded-2xl shadow-card border border-primary-light/10 p-5">
             <h3 className="font-bold text-primary mb-3 flex items-center gap-2 text-sm">
               <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,15 +434,14 @@ function BookDetail() {
             <InfoRow label="تعداد صفحات"  value={book.pages ? `${book.pages} صفحه` : null} />
             <InfoRow label="سال انتشار"   value={book.year} />
             <InfoRow label="چاپ"          value={book.edition ? `چاپ ${book.edition}` : null} />
-            {/* ✅ شابک */}
+            <InfoRow label="نوع جلد"      value={book.coverType} />
+            <InfoRow label="قطع کتاب"     value={book.trimSize} />
             <InfoRow label="شابک (ISBN)"  value={book.isbn} />
-            {/* ✅ محل نشر */}
             <InfoRow label="محل نشر"      value={book.publisherCity} />
             <InfoRow label="ناشر"         value="انتشارات الحان" />
             <InfoRow label="نوع"          value={book.isAudio ? "کتاب صوتی" : "کتاب چاپی"} />
           </div>
 
-          {/* توضیحات */}
           <div className="bg-white rounded-2xl p-6 shadow-card border border-primary-light/10">
             <h3 className="font-bold text-primary mb-3 flex items-center gap-2">
               <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,7 +454,6 @@ function BookDetail() {
             </p>
           </div>
 
-          {/* دکمه ارسال اثر */}
           <div className="bg-primary-bg rounded-2xl p-5 flex items-center justify-between gap-4">
             <div>
               <p className="font-bold text-primary text-sm">آیا اثری برای انتشار دارید؟</p>
@@ -379,6 +463,74 @@ function BookDetail() {
               ارسال اثر
             </Link>
           </div>
+        </div>
+      </div>
+
+      {/* ===== نظرات کاربران ===== */}
+      <div className="mt-16 border-t border-primary-light/20 pt-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <h2 className="text-2xl font-bold text-primary">نظرات خوانندگان</h2>
+            {reviews.length > 0 && (
+              <span className="bg-primary-bg text-primary text-xs font-bold px-2.5 py-1 rounded-full">
+                {reviews.length}
+              </span>
+            )}
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="space-y-4 mb-10">
+              {reviews.map((r) => (
+                <div key={r.id} className="bg-white rounded-2xl shadow-card border border-primary-light/10 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-full bg-gradient-gold flex items-center justify-center text-white font-bold text-sm shrink-0">
+                        {r.name?.charAt(0) || "?"}
+                      </div>
+                      <span className="font-bold text-primary text-sm">{r.name}</span>
+                    </div>
+                    {r.rating ? <StarsDisplay value={r.rating} /> : null}
+                  </div>
+                  <p className="text-text-secondary text-sm mt-3 leading-relaxed">{r.comment}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-text-muted text-sm mb-10">
+              هنوز نظری برای این کتاب ثبت نشده — اولین نفر باشید!
+            </p>
+          )}
+
+          <form onSubmit={handleReviewSubmit} className="bg-white rounded-2xl shadow-card border border-primary-light/10 p-6">
+            <h3 className="font-bold text-primary mb-4">ثبت نظر شما</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input
+                type="text"
+                value={reviewName}
+                onChange={(e) => setReviewName(e.target.value)}
+                placeholder="نام شما"
+                className="border-2 border-primary-light/30 rounded-xl p-3 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+              />
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-text-muted shrink-0">امتیاز:</span>
+                <StarsInput value={reviewRating} onChange={setReviewRating} />
+              </div>
+            </div>
+            <textarea
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+              placeholder="نظر شما درباره این کتاب..."
+              rows={4}
+              className="w-full mt-4 border-2 border-primary-light/30 rounded-xl p-3 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+            />
+            <button
+              type="submit"
+              disabled={submittingReview}
+              className="btn-gold mt-4 disabled:opacity-60"
+            >
+              {submittingReview ? "در حال ارسال..." : "ثبت نظر"}
+            </button>
+          </form>
         </div>
       </div>
 
@@ -394,7 +546,7 @@ function BookDetail() {
             </div>
             <Link
               to={`/books?search=${encodeURIComponent(book.authorName)}`}
-              className="text-accent font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+              className="text-accent font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all shrink-0"
             >
               <span>همه آثار</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,11 +554,7 @@ function BookDetail() {
               </svg>
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {sameAuthor.map((rel) => (
-              <RelatedBookCard key={rel.id} book={rel} />
-            ))}
-          </div>
+          <RelatedBooksRow books={sameAuthor} />
         </div>
       )}
 
@@ -422,7 +570,7 @@ function BookDetail() {
             </div>
             <Link
               to={`/books?category=${encodeURIComponent(book.category)}`}
-              className="text-accent font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+              className="text-accent font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all shrink-0"
             >
               <span>مشاهده همه</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,18 +578,11 @@ function BookDetail() {
               </svg>
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {sameCategory.map((rel) => (
-              <RelatedBookCard key={rel.id} book={rel} />
-            ))}
-          </div>
+          <RelatedBooksRow books={sameCategory} />
         </div>
       )}
 
-      {/* ===== مودال خرید ===== */}
-      {showBuyModal && (
-        <BuyModal book={book} onClose={() => setShowBuyModal(false)} />
-      )}
+      {showBuyModal && <BuyModal book={book} onClose={() => setShowBuyModal(false)} />}
     </div>
     </>
   );
