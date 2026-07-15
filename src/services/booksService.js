@@ -48,6 +48,15 @@ const booksService = {
     return apiClient.delete(`/upload/books/${id}/image`);
   },
 
+  async uploadGalleryImages(id, files) {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("images", file));
+    return apiClient.upload(`/upload/books/${id}/images`, formData);
+  },
+  async deleteGalleryImage(id, imageUrl) {
+    return apiClient.delete(`/upload/books/${id}/images?imageUrl=${encodeURIComponent(imageUrl)}`);
+  },
+
   // ✅ سازگاری با کد قدیمی useBooks — setAll دیگر نیازی نیست
   async setAll() {
     console.warn("booksService.setAll در نسخه API استفاده نمی‌شود");

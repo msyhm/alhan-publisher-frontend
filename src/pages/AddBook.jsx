@@ -7,7 +7,8 @@ import toast from "react-hot-toast";
 const INPUT_CLS = "w-full border-2 border-primary-light/30 rounded-xl p-3.5 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all bg-primary-bg/30";
 
 const EDITIONS = ["اول","دوم","سوم","چهارم","پنجم","ششم","هفتم","هشتم","نهم","دهم"];
-
+const COVER_TYPES = ["شومیز", "گالینگور", "سلفون براق", "سلفون مات"];
+const TRIM_SIZES  = ["رقعی", "وزیری", "رحلی", "جیبی", "پالتویی"];
 // ✅ تبدیل base64 (خروجی ImageUploader در حالت آپلود) به File برای ارسال multipart
 function dataUrlToFile(dataUrl, filename) {
   const [header, base64] = dataUrl.split(",");
@@ -23,7 +24,7 @@ const EMPTY_FORM = {
   title: "", author: "", description: "", category: "",
   pages: "", year: "", image: "", isAudio: false,
   // ✅ فیلدهای جدید
-  price: "", isbn: "", edition: "اول", publisherCity: "قم",
+  price: "", isbn: "", edition: "اول", publisherCity: "قم", coverType: "", trimSize: "",
 };
 
 function AddBook() {
@@ -70,6 +71,8 @@ function AddBook() {
         isbn:          formData.isbn.trim() || undefined,
         edition:       formData.edition || undefined,
         publisherCity: formData.publisherCity.trim() || undefined,
+        coverType:     formData.coverType || undefined,
+        trimSize:      formData.trimSize || undefined,
         // ✅ اگر کاربر لینک تصویر وارد کرده (نه آپلود فایل)، همینجا بفرست
         ...(formData.image && !isUploadedImage ? { image: formData.image } : {}),
       };
@@ -221,6 +224,21 @@ function AddBook() {
                 <input type="text" name="publisherCity" value={formData.publisherCity}
                   onChange={handleChange} placeholder="مثال: تهران"
                   className={INPUT_CLS} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1.5">نوع جلد</label>
+                <select name="coverType" value={formData.coverType} onChange={handleChange} className={INPUT_CLS}>
+                  <option value="">— انتخاب کنید —</option>
+                  {COVER_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1.5">قطع کتاب</label>
+                <select name="trimSize" value={formData.trimSize} onChange={handleChange} className={INPUT_CLS}>
+                  <option value="">— انتخاب کنید —</option>
+                  {TRIM_SIZES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
 
             </div>

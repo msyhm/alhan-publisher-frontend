@@ -1,10 +1,3 @@
-/**
- * reviewsService.js
- * ⚠️ این سرویس به endpointهایی نیاز دارد که هنوز روی بک‌اند ساخته نشده‌اند:
- *   GET  /api/books/:bookId/reviews
- *   POST /api/books/:bookId/reviews
- * تا وقتی این دو مسیر ساخته نشوند، خطای ۴۰۴ می‌گیرند (که فرانت graceful هندلش می‌کند).
- */
 import apiClient from "./apiClient.js";
 
 const reviewsService = {
@@ -13,6 +6,16 @@ const reviewsService = {
   },
   async create(bookId, data) {
     return apiClient.post(`/books/${bookId}/reviews`, data);
+  },
+  async getAll(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiClient.get(`/reviews${query ? `?${query}` : ""}`);
+  },
+  async updateStatus(id, status) {
+    return apiClient.patch(`/reviews/${id}/status`, { status });
+  },
+  async remove(id) {
+    return apiClient.delete(`/reviews/${id}`);
   },
 };
 
