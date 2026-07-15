@@ -21,6 +21,7 @@ import AdminSubmissions from "./pages/AdminSubmissions";
 import AdminSettings from "./pages/AdminSettings";
 import AdminUsers from "./pages/AdminUsers";
 import AdminReports from "./pages/AdminReports";
+import AdminReviews from "./pages/AdminReviews";
 
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -84,6 +85,7 @@ function App() {
         <Route path="/admin/books/add" element={<ProtectedAdminLayout><AddBook /></ProtectedAdminLayout>} />
         <Route path="/admin/books/edit/:id" element={<ProtectedAdminLayout><EditBook /></ProtectedAdminLayout>} />
         <Route path="/admin/messages" element={<ProtectedAdminLayout><AdminMessages /></ProtectedAdminLayout>} />
+        <Route path="/admin/reviews" element={<ProtectedAdminLayout><AdminReviews /></ProtectedAdminLayout>} />
         <Route path="/admin/submissions" element={<ProtectedAdminLayout><AdminSubmissions /></ProtectedAdminLayout>} />
         <Route path="/admin/settings" element={<ProtectedAdminLayout><AdminSettings /></ProtectedAdminLayout>} />
         <Route path="/admin/users" element={<ProtectedAdminLayout><AdminUsers /></ProtectedAdminLayout>} />

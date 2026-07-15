@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import useBooks from "../hooks/useBooks";
 import booksService from "../services/booksService";
 import ImageUploader from "../components/ui/ImageUploader";
@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 const INPUT_CLS = "w-full border-2 border-primary-light/30 rounded-xl p-3.5 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all bg-primary-bg/30";
 
 const EDITIONS = ["اول", "دوم", "سوم", "چهارم", "پنجم", "ششم", "هفتم", "هشتم", "نهم", "دهم"];
+const COVER_TYPES = ["شومیز", "گالینگور", "سلفون براق", "سلفون مات"];
+const TRIM_SIZES  = ["رقعی", "وزیری", "رحلی", "جیبی", "پالتویی"];
 
 // ✅ تبدیل base64 (خروجی ImageUploader در حالت آپلود) به File برای ارسال multipart
 function dataUrlToFile(dataUrl, filename) {
@@ -20,13 +22,97 @@ function dataUrlToFile(dataUrl, filename) {
   return new File([bytes], filename, { type: mime });
 }
 
+// ✅ گالری تصاویر بیشتر — آپلود/حذف مستقل از فرم اصلی (چون به id کتاب نیاز دارد که در حالت ویرایش موجود است)
+function GallerySection({ bookId, images }) {
+  const [gallery, setGallery] = useState(Array.isArray(images) ? images : []);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setGallery(Array.isArray(images) ? images : []);
+  }, [images]);
+
+  const handleFilesSelected = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const res = await booksService.uploadGalleryImages(bookId, files);
+      setGallery(Array.isArray(res?.images) ? res.images : gallery);
+      toast.success(`${files.length} تصویر اضافه شد`);
+    } catch (err) {
+      toast.error(err.message || "خطا در آپلود تصاویر");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (url) => {
+    if (!window.confirm("این تصویر از گالری حذف شود؟")) return;
+    try {
+      const res = await booksService.deleteGalleryImage(bookId, url);
+      setGallery(Array.isArray(res?.images) ? res.images : gallery.filter((u) => u !== url));
+      toast.success("تصویر حذف شد");
+    } catch (err) {
+      toast.error(err.message || "خطا در حذف تصویر");
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+        گالری تصاویر بیشتر
+        <span className="text-text-muted font-normal mr-1">— علاوه بر تصویر جلد اصلی</span>
+      </label>
+
+      {gallery.length > 0 && (
+        <div className="flex flex-wrap gap-3 mb-3">
+          {gallery.map((url) => (
+            <div key={url} className="relative w-20 h-28 rounded-lg overflow-hidden border-2 border-primary-light/20 group">
+              <img src={url} alt="" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => handleDelete(url)}
+                className="absolute top-1 left-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <label
+        className={`inline-flex items-center gap-2 border-2 border-dashed border-primary-light/30 rounded-xl px-4 py-2.5 cursor-pointer hover:border-accent transition-colors text-sm text-text-secondary ${
+          uploading ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        {uploading ? "در حال آپلود..." : "افزودن تصویر"}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFilesSelected}
+          className="hidden"
+        />
+      </label>
+    </div>
+  );
+}
+
 function EditBook() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { books } = useBooks();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ همه useState‌ها قبل از هر شرط — فیلدهای جدید اضافه شدند
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -40,6 +126,8 @@ function EditBook() {
     isbn: "",
     edition: "اول",
     publisherCity: "قم",
+    coverType: "",
+    trimSize: "",
   });
 
   const book = Array.isArray(books)
@@ -57,11 +145,12 @@ function EditBook() {
         year:          book.year          || "",
         image:         book.image         || "",
         isAudio:       book.isAudio       || false,
-        // ✅ مقداردهی فیلدهای جدید — با fallback برای کتاب‌های قدیمی
         price:         book.price         ?? "",
         isbn:          book.isbn          ?? "",
         edition:       book.edition       ?? "اول",
         publisherCity: book.publisherCity ?? "قم",
+        coverType:     book.coverType     ?? "",
+        trimSize:      book.trimSize      ?? "",
       });
     }
   }, [book?.id]);
@@ -95,7 +184,6 @@ function EditBook() {
       return;
     }
 
-    // اعتبارسنجی شابک — هماهنگ با بک‌اند (۱۰ یا ۱۳ رقم)
     if (formData.isbn && !/^\d{10,13}$/.test(formData.isbn)) {
       toast.error("شابک باید ۱۰ یا ۱۳ رقم عدد باشد");
       return;
@@ -118,14 +206,13 @@ function EditBook() {
         isbn:          formData.isbn.trim() || undefined,
         edition:       formData.edition || undefined,
         publisherCity: formData.publisherCity.trim() || undefined,
-        // ✅ اگر کاربر لینک تصویر وارد کرده (نه آپلود فایل)، همینجا بفرست
+        coverType:     formData.coverType || undefined,
+        trimSize:      formData.trimSize || undefined,
         ...(formData.image && !isUploadedImage ? { image: formData.image } : {}),
       };
 
-      // ✅ ویرایش واقعی در بک‌اند
       await booksService.update(id, payload);
 
-      // ✅ اگر تصویر جدیدی از دستگاه آپلود شده، همین حالا ارسالش کن
       if (isUploadedImage) {
         try {
           const file = dataUrlToFile(formData.image, "cover.jpg");
@@ -147,7 +234,6 @@ function EditBook() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-      {/* هدر */}
       <div className="mb-8 flex items-center gap-3">
         <Link
           to="/admin/books"
@@ -172,7 +258,6 @@ function EditBook() {
       <div className="bg-white rounded-3xl shadow-elegant p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* ─── عنوان + نویسنده ─── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">عنوان کتاب *</label>
@@ -184,20 +269,17 @@ function EditBook() {
             </div>
           </div>
 
-          {/* ─── دسته‌بندی ─── */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">دسته‌بندی</label>
             <input type="text" name="category" value={formData.category} onChange={handleChange} className={INPUT_CLS} />
           </div>
 
-          {/* ─── تصویر ─── */}
           <ImageUploader
             value={formData.image}
             onChange={(val) => setFormData((prev) => ({ ...prev, image: val }))}
             label="تصویر جلد کتاب"
           />
 
-          {/* ─── صفحات + سال + صوتی ─── */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">تعداد صفحات</label>
@@ -216,7 +298,6 @@ function EditBook() {
             </div>
           </div>
 
-          {/* ─── بخش جداکننده: اطلاعات نشر ─── */}
           <div className="border-t-2 border-dashed border-primary-light/20 pt-5">
             <p className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
               <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +307,6 @@ function EditBook() {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {/* ✅ قیمت */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1.5">
                   قیمت (تومان)
@@ -239,7 +319,6 @@ function EditBook() {
                 />
               </div>
 
-              {/* ✅ شابک */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1.5">
                   شابک (ISBN)
@@ -253,7 +332,6 @@ function EditBook() {
                 />
               </div>
 
-              {/* ✅ شماره چاپ */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1.5">شماره چاپ</label>
                 <select name="edition" value={formData.edition} onChange={handleChange} className={INPUT_CLS}>
@@ -263,7 +341,6 @@ function EditBook() {
                 </select>
               </div>
 
-              {/* ✅ محل نشر */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1.5">محل نشر</label>
                 <input
@@ -272,10 +349,27 @@ function EditBook() {
                   className={INPUT_CLS}
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1.5">نوع جلد</label>
+                <select name="coverType" value={formData.coverType} onChange={handleChange} className={INPUT_CLS}>
+                  <option value="">— انتخاب کنید —</option>
+                  {COVER_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1.5">قطع کتاب</label>
+                <select name="trimSize" value={formData.trimSize} onChange={handleChange} className={INPUT_CLS}>
+                  <option value="">— انتخاب کنید —</option>
+                  {TRIM_SIZES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* ─── توضیحات ─── */}
+          <GallerySection bookId={id} images={book.images} />
+
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">توضیحات کتاب</label>
             <textarea
@@ -285,7 +379,6 @@ function EditBook() {
             />
           </div>
 
-          {/* ─── دکمه‌ها ─── */}
           <div className="flex gap-4 pt-2">
             <button
               type="submit" disabled={isSubmitting}
