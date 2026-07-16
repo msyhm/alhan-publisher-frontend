@@ -28,6 +28,11 @@ import Contact from "./pages/Contact";
 import SubmitBook from "./pages/SubmitBook";
 import NotFound from "./pages/NotFound";
 
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Account from "./pages/Account";
+import ProtectedUserRoute from "./components/ProtectedUserRoute";
+
 // ✅ جدا کردن layout عمومی از ادمین
 function PublicLayout({ children }) {
   return (
@@ -75,6 +80,9 @@ function App() {
         <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/submit-book" element={<PublicLayout><SubmitBook /></PublicLayout>} />
+        <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+        <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+        <Route path="/account" element={<PublicLayout><ProtectedUserRoute><Account /></ProtectedUserRoute></PublicLayout>} />
 
         {/* ─── صفحه ورود ادمین (بدون sidebar) ─── */}
         <Route path="/admin/login" element={<AdminLogin />} />

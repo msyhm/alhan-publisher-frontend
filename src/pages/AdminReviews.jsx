@@ -116,7 +116,8 @@ function AdminReviews() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-primary">{r.name}</span>
+                    <span className="font-bold text-primary">{r.user?.name}</span>
+                    <span className="text-[11px] text-text-muted">{r.user?.email}</span>
                     <Stars value={r.rating} />
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${STATUS_BADGE[r.status]}`}>
                       {STATUS_LABEL[r.status]}

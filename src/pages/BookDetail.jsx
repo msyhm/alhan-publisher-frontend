@@ -8,6 +8,7 @@ import useBooks from "../hooks/useBooks";
 import useSiteSettings from "../hooks/useSiteSettings";
 import reviewsService from "../services/reviewsService";
 import InlineError from "../components/InlineError";
+import authService from "../services/authService";
 
 // ─── مودال «تماس برای خرید» ────────────────────────────────────────────────
 function BuyModal({ book, onClose }) {
@@ -158,10 +159,11 @@ function BookDetail() {
   const [activeImage,  setActiveImage]  = useState(0);
 
   const [reviews,         setReviews]         = useState([]);
-  const [reviewName,      setReviewName]      = useState("");
   const [reviewRating,    setReviewRating]    = useState(0);
   const [reviewComment,   setReviewComment]   = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [currentUser,     setCurrentUser]     = useState(null);
+  const [checkingAuth,    setCheckingAuth]    = useState(true);
 
   useEffect(() => {
     if (booksLoading) return;
@@ -189,6 +191,13 @@ function BookDetail() {
       .catch(() => setReviews([]));
   }, [book]);
 
+  useEffect(() => {
+    authService.me()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null))
+      .finally(() => setCheckingAuth(false));
+  }, []);
+
   const avgRating = reviews.length
     ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
     : 0;
@@ -206,25 +215,23 @@ function BookDetail() {
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
-  const handleReviewSubmit = async (e) => {
+const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    if (!reviewName.trim() || !reviewComment.trim()) {
-      toast.error("نام و متن نظر الزامی است");
+    if (!reviewComment.trim()) {
+      toast.error("متن نظر الزامی است");
       return;
     }
     setSubmittingReview(true);
     try {
       await reviewsService.create(book.id, {
-        name:    reviewName.trim(),
         rating:  reviewRating || undefined,
         comment: reviewComment.trim(),
       });
       toast.success("نظر شما ثبت شد و پس از بررسی نمایش داده می‌شود");
-      setReviewName("");
       setReviewComment("");
       setReviewRating(0);
     } catch (err) {
-      toast.error("ثبت نظر آنلاین هنوز فعال نشده — به‌زودی");
+      toast.error(err.message || "ثبت نظر آنلاین هنوز فعال نشده — به‌زودی");
     } finally {
       setSubmittingReview(false);
     }
@@ -485,9 +492,9 @@ function BookDetail() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-9 h-9 rounded-full bg-gradient-gold flex items-center justify-center text-white font-bold text-sm shrink-0">
-                        {r.name?.charAt(0) || "?"}
+                        {r.user?.name?.charAt(0) || "?"}
                       </div>
-                      <span className="font-bold text-primary text-sm">{r.name}</span>
+                      <span className="font-bold text-primary text-sm">{r.user?.name}</span>
                     </div>
                     {r.rating ? <StarsDisplay value={r.rating} /> : null}
                   </div>
@@ -501,36 +508,34 @@ function BookDetail() {
             </p>
           )}
 
-          <form onSubmit={handleReviewSubmit} className="bg-white rounded-2xl shadow-card border border-primary-light/10 p-6">
-            <h3 className="font-bold text-primary mb-4">ثبت نظر شما</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input
-                type="text"
-                value={reviewName}
-                onChange={(e) => setReviewName(e.target.value)}
-                placeholder="نام شما"
-                className="border-2 border-primary-light/30 rounded-xl p-3 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
-              />
-              <div className="flex items-center gap-3">
+          {checkingAuth ? null : currentUser ? (
+            <form onSubmit={handleReviewSubmit} className="bg-white rounded-2xl shadow-card border border-primary-light/10 p-6">
+              <h3 className="font-bold text-primary mb-4">
+                ثبت نظر شما <span className="text-text-muted font-normal text-sm">(با نام {currentUser.name})</span>
+              </h3>
+              <div className="flex items-center gap-3 mb-4">
                 <span className="text-sm text-text-muted shrink-0">امتیاز:</span>
                 <StarsInput value={reviewRating} onChange={setReviewRating} />
               </div>
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="نظر شما درباره این کتاب..."
+                rows={4}
+                className="w-full border-2 border-primary-light/30 rounded-xl p-3 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+              />
+              <button type="submit" disabled={submittingReview} className="btn-gold mt-4 disabled:opacity-60">
+                {submittingReview ? "در حال ارسال..." : "ثبت نظر"}
+              </button>
+            </form>
+          ) : (
+            <div className="bg-primary-bg rounded-2xl p-6 text-center">
+              <p className="text-text-secondary text-sm mb-3">برای ثبت نظر ابتدا وارد حساب کاربری خود شوید</p>
+              <Link to="/login" state={{ from: `/books/${book.id}` }} className="btn-gold inline-block">
+                ورود / ثبت‌نام
+              </Link>
             </div>
-            <textarea
-              value={reviewComment}
-              onChange={(e) => setReviewComment(e.target.value)}
-              placeholder="نظر شما درباره این کتاب..."
-              rows={4}
-              className="w-full mt-4 border-2 border-primary-light/30 rounded-xl p-3 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
-            />
-            <button
-              type="submit"
-              disabled={submittingReview}
-              className="btn-gold mt-4 disabled:opacity-60"
-            >
-              {submittingReview ? "در حال ارسال..." : "ثبت نظر"}
-            </button>
-          </form>
+          )}
         </div>
       </div>
 

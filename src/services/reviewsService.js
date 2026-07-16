@@ -1,11 +1,12 @@
 import apiClient from "./apiClient.js";
+import userApiClient from "./userApiClient.js";
 
 const reviewsService = {
   async getForBook(bookId) {
     return apiClient.get(`/books/${bookId}/reviews`);
   },
   async create(bookId, data) {
-    return apiClient.post(`/books/${bookId}/reviews`, data);
+    return userApiClient.post(`/books/${bookId}/reviews`, data);
   },
   async getAll(params = {}) {
     const query = new URLSearchParams(params).toString();

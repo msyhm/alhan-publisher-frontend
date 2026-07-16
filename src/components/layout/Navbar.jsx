@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import useBooks from "../../hooks/useBooks";
 import Icon from "../ui/Icon";
 import logoBlack from "../../assets/logo-black.png";
+import authService from "../../services/authService";
 
 const links = [
   { to: "/",            label: "خانه",       icon: "home"   },
@@ -19,6 +20,7 @@ function Navbar() {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const { books } = useBooks();
   const navigate = useNavigate();
@@ -34,6 +36,12 @@ function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    authService.me()
+      .then(() => setIsLoggedIn(true))
+      .catch(() => setIsLoggedIn(false));
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -213,7 +221,7 @@ function Navbar() {
             ))}
 
             <Link
-              to="/admin/login"
+              to={isLoggedIn ? "/account" : "/login"}
               className="mr-2 relative w-10 h-10 rounded-xl bg-gradient-gold text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-105"
               title="حساب کاربری"
             >
@@ -272,7 +280,7 @@ function Navbar() {
 
           {/* چپ: حساب کاربری */}
           <Link
-            to="/admin/login"
+            to={isLoggedIn ? "/account" : "/login"}
             onClick={() => { setOpen(false); setIsSearchOpen(false); }}
             className="justify-self-end relative w-9 h-9 rounded-xl bg-gradient-gold text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all"
             aria-label="حساب کاربری"
