@@ -12,8 +12,8 @@ function Home() {
       <PageMeta />
       <main>
         <Hero />
-        <LatestBooks />
         <FeaturedBook />
+        <LatestBooks />
         <UniversitiesSection />
         <WhyAlhan />
         <PublishingProcess />
