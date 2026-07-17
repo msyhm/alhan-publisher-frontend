@@ -5,6 +5,33 @@
 import apiClient from "./apiClient.js";
 import { setToken, clearToken } from "./authToken.js";
 
+// ✅ نقشه‌ی فیلد ↔ بخش، دقیقاً منطبق با VALID_KEYS بک‌اند
+// (general/hero/contact/social/about/universities)
+const SECTION_FIELDS = {
+  general:      ["publisherName", "publisherNameAccent", "logoLetter", "foundingYear", "slogan", "publishLicense"],
+  hero:         ["heroSubtitle", "featuredBookId"],
+  about:        ["aboutText", "vision", "mission", "values"],
+  contact:      ["address", "phone", "phoneRaw", "email"],
+  social:       ["instagram", "telegram"],
+  universities: ["universities"],
+};
+
+// تبدیل آبجکت تخت (flat) به بخش‌های جدا برای ذخیره در بک‌اند
+function bucketize(flat) {
+  const sections = {};
+  for (const [section, keys] of Object.entries(SECTION_FIELDS)) {
+    const value = {};
+    let has = false;
+    keys.forEach((k) => {
+      if (Object.prototype.hasOwnProperty.call(flat, k)) {
+        value[k] = flat[k];
+        has = true;
+      }
+    });
+    if (has) sections[section] = value;
+  }
+  return sections;
+}
 
 const settingsService = {
   // دریافت همه تنظیمات (عمومی)
@@ -43,9 +70,19 @@ const settingsService = {
     }
   },
 
+  // ✅ FIX: قبلاً همه‌چیز را با کلید "general" ذخیره می‌کرد و بخش‌های
+  // hero/contact/social/about/universities هیچ‌وقت واقعاً نوشته نمی‌شدند.
+  // حالا هر فیلد به بخش درست خودش (مطابق VALID_KEYS بک‌اند) فرستاده می‌شود.
   async updateSettings(updates) {
-    // تشخیص بخش مناسب و آپدیت آن
-    return apiClient.put("/settings", { general: updates });
+    const sections = bucketize(updates);
+    return apiClient.put("/settings", sections);
+  },
+
+  // ✅ FIX: این متد قبلاً اصلاً وجود نداشت — دکمه‌ی «بازنشانی تنظیمات»
+  // با خطای «resetSettings is not a function» کرش می‌کرد.
+  async resetSettings(defaults) {
+    const sections = bucketize(defaults);
+    return apiClient.put("/settings", sections);
   },
 
   async getCredentials(defaults) {

@@ -20,16 +20,7 @@ const DEFAULT_SETTINGS = {
   foundingYear: "۱۳۹۸",
   publishLicense: "۱۴۹۳۳",
   heroSubtitle: "ناشر آثار علمی، دانشگاهی، فرهنگی و ادبی با هدف ارتقای دانش و فرهنگ در جامعه",
-  heroStat1Value: "۶+", heroStat1Label: "سال فعالیت",
-  heroStat2Value: "۱۱+", heroStat2Label: "کتاب منتشر شده",
-  heroStat3Value: "۲۰+", heroStat3Label: "نویسنده همکار",
   featuredBookId: null,
-  stats: [
-    { icon: "book",       value: 11, suffix: "+", title: "کتاب منتشر شده" },
-    { icon: "pen",        value: 20, suffix: "+", title: "نویسنده همکار"  },
-    { icon: "headphones", value: 15, suffix: "+", title: "کتاب صوتی"      },
-    { icon: "calender",   value: 6,  suffix: "+", title: "سال فعالیت"     },
-  ],
   universities: DEFAULT_UNIVERSITIES,
   aboutText: "انتشارات الحان با هدف انتشار آثار علمی، دانشگاهی و فرهنگی فعالیت می‌کند و تاکنون ده‌ها اثر ارزشمند را منتشر کرده است.",
   vision:  "تبدیل به یکی از برترین ناشران علمی",
@@ -111,13 +102,15 @@ export function useAdminCredentials() {
     return () => { cancelled = true; };
   }, []);
 
+  // ✅ FIX: قبلاً این تابع خطای بک‌اند را با .catch(console.error) قورت
+  // می‌داد و همیشه state محلی را به‌روزرسانی می‌کرد — یعنی حتی اگر رمز
+  // فعلی اشتباه بود یا سرور خطا می‌داد، فرم موفقیت نشان می‌داد. حالا واقعاً
+  // منتظر پاسخ سرور می‌مانیم و فقط در صورت موفقیت state را به‌روز می‌کنیم.
   const updateCredentials = useCallback(async (updates) => {
-    setCredentialsState((prev) => {
-      const merged = { ...prev, ...updates };
-      settingsService.updateCredentials(updates, prev).catch(console.error);
-      return merged;
-    });
-  }, []);
+    const res = await settingsService.updateCredentials(updates, credentials);
+    setCredentialsState((prev) => ({ ...prev, ...updates }));
+    return res;
+  }, [credentials]);
 
   const verifyPassword = useCallback(
     (password) => credentials.adminPassword === password,

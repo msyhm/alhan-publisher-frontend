@@ -90,9 +90,9 @@ function About() {
         </div>
       </div>
 
-      {/* ===== چشم‌انداز و رسالت — به‌جای باکس آماری قبلی ===== */}
+      {/* ===== چشم‌انداز، رسالت و ارزش‌ها ===== */}
       <div className="mb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="relative bg-gradient-primary rounded-3xl p-8 shadow-elegant-hover overflow-hidden">
             <div className="absolute inset-0 bg-accent/10 blur-2xl" />
             <div className="relative">
@@ -115,6 +115,19 @@ function About() {
               <h3 className="text-white font-bold text-xl mb-2">رسالت ما</h3>
               <p className="text-primary-light leading-relaxed">
                 {settings.mission || "انتشار آثار ارزشمند و ارتقای دانش و فرهنگ جامعه"}
+              </p>
+            </div>
+          </div>
+
+          <div className="relative bg-gradient-primary rounded-3xl p-8 shadow-elegant-hover overflow-hidden">
+            <div className="absolute inset-0 bg-accent/10 blur-2xl" />
+            <div className="relative">
+              <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
+                <Icon name="check" size={28} strokeWidth={1.5} className="text-accent" />
+              </div>
+              <h3 className="text-white font-bold text-xl mb-2">ارزش‌های ما</h3>
+              <p className="text-primary-light leading-relaxed">
+                {settings.values || "اصالت، کیفیت و نوآوری"}
               </p>
             </div>
           </div>

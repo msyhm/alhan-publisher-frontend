@@ -1,5 +1,5 @@
 import Icon from "../components/ui/Icon";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import useSiteSettings, { useAdminCredentials } from "../hooks/useSiteSettings";
@@ -9,7 +9,6 @@ import ImageUploader from "../components/ui/ImageUploader";
 const TABS = [
   { id: "general",      label: "عمومی",           icon: "settings" },
   { id: "hero",         label: "صفحه اصلی",       icon: "home" },
-  { id: "stats",        label: "آمار",             icon: "chart" },
   { id: "universities", label: "دانشگاه‌ها",       icon: "book" },
   { id: "about",        label: "درباره ما",        icon: "info" },
   { id: "contact",      label: "تماس",             icon: "phone" },
@@ -46,29 +45,36 @@ const Textarea = ({ value, onChange, placeholder, rows = 4 }) => (
 );
 
 function AdminSettings() {
-  const { settings, updateSettings, resetSettings } = useSiteSettings();
+  const { settings, updateSettings, resetSettings, loading: settingsLoading } = useSiteSettings();
   // ✅ FIX: credentials از hook جداگانه مدیریت می‌شود
-  const { credentials, updateCredentials } = useAdminCredentials();
+  const { credentials, updateCredentials, loading: credsLoading } = useAdminCredentials();
   const { books } = useBooks();
   const [activeTab, setActiveTab] = useState("general");
   const [localSettings, setLocalSettings] = useState(settings);
   const [localCredentials, setLocalCredentials] = useState(credentials);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [newUniName, setNewUniName] = useState("");
   const [newUniLogo, setNewUniLogo] = useState("");
   const [editingUniId, setEditingUniId] = useState(null);
 
+  // ✅ FIX: قبلاً localSettings فقط یک‌بار، با useState(settings)، مقداردهی
+  // می‌شد — یعنی با مقدار پیش‌فرض قبل از پایان بارگذاری از سرور. اگر ادمین
+  // زودتر از رسیدن پاسخ سرور «ذخیره» را می‌زد، تمام تنظیمات واقعی سایت با
+  // مقادیر پیش‌فرض بازنویسی می‌شد. حالا به‌محض پایان بارگذاری، فرم با
+  // داده‌ی واقعی همگام می‌شود.
+  useEffect(() => {
+    if (!settingsLoading) setLocalSettings(settings);
+  }, [settingsLoading]);
+
+  useEffect(() => {
+    if (!credsLoading) setLocalCredentials(credentials);
+  }, [credsLoading]);
+
   const set = (key, value) =>
     setLocalSettings((prev) => ({ ...prev, [key]: value }));
-
-  const setStat = (index, key, value) => {
-    const updated = localSettings.stats.map((s, i) =>
-      i === index ? { ...s, [key]: key === "value" ? Number(value) || 0 : value } : s
-    );
-    setLocalSettings((prev) => ({ ...prev, stats: updated }));
-  };
 
   const addUniversity = () => {
     if (!newUniName.trim()) return;
@@ -101,6 +107,12 @@ function AdminSettings() {
   };
 
   const handlePasswordChange = () => {
+    // ✅ FIX: بک‌اند رمز فعلی را الزامی می‌داند و با آن مقایسه می‌کند؛
+    // قبلاً این فیلد اصلاً در فرم وجود نداشت، پس تغییر رمز همیشه رد می‌شد.
+    if (!currentPass.trim()) {
+      toast.error("رمز عبور فعلی را وارد کنید");
+      return;
+    }
     if (!newPass.trim()) {
       toast.error("رمز جدید را وارد کنید");
       return;
@@ -114,10 +126,14 @@ function AdminSettings() {
       return;
     }
     // ✅ FIX: رمز در adminCredentials ذخیره می‌شود، نه siteSettings
-    updateCredentials({ adminPassword: newPass });
-    setNewPass("");
-    setConfirmPass("");
-    toast.success("رمز عبور با موفقیت تغییر یافت");
+    updateCredentials({ adminPassword: newPass, currentPassword: currentPass })
+      .then(() => {
+        setCurrentPass("");
+        setNewPass("");
+        setConfirmPass("");
+        toast.success("رمز عبور با موفقیت تغییر یافت. لطفاً دوباره وارد شوید");
+      })
+      .catch((err) => toast.error(err?.message || "رمز عبور فعلی اشتباه است"));
   };
 
   const handleReset = () => {
@@ -148,14 +164,21 @@ function AdminSettings() {
             </svg>
             داشبورد
           </Link>
-          <button onClick={handleSave} className="btn-gold flex items-center gap-2 text-sm">
+          <button onClick={handleSave} disabled={settingsLoading} className="btn-gold flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            ذخیره تغییرات
+            {settingsLoading ? "در حال بارگذاری..." : "ذخیره تغییرات"}
           </button>
         </div>
       </div>
+
+      {settingsLoading && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-text-muted bg-primary-bg/50 rounded-xl px-4 py-3">
+          <Icon name="spinner" size={16} className="animate-spin" />
+          در حال بارگذاری تنظیمات فعلی سایت — لطفاً قبل از ویرایش صبر کنید تا کامل بارگذاری شود.
+        </div>
+      )}
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* منوی تب‌ها */}
@@ -321,52 +344,11 @@ function AdminSettings() {
                 )}
               </div>
 
-              {/* ── آمار Hero ── */}
-              <div className="border-t border-primary-light/20 pt-5">
-                <h3 className="font-bold text-primary mb-4">آمار نمایش داده شده در Hero</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[1, 2, 3].map((n) => (
-                    <div key={n} className="bg-primary-bg/50 rounded-xl p-4 space-y-3">
-                      <p className="text-xs font-bold text-accent">آمار {n}</p>
-                      <Field label="عدد">
-                        <Input value={localSettings[`heroStat${n}Value`]} onChange={(v) => set(`heroStat${n}Value`, v)} placeholder="۶+" />
-                      </Field>
-                      <Field label="برچسب">
-                        <Input value={localSettings[`heroStat${n}Label`]} onChange={(v) => set(`heroStat${n}Label`, v)} placeholder="سال فعالیت" />
-                      </Field>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ===== آمار ===== */}
-          {activeTab === "stats" && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-bold text-primary mb-6">کارت‌های آمار</h2>
-              <p className="text-sm text-text-muted -mt-4">این اعداد در بخش آمار صفحه اصلی نمایش داده می‌شوند</p>
-              <div className="space-y-4">
-                {localSettings.stats.map((stat, i) => (
-                  <div key={i} className="bg-primary-bg/50 rounded-2xl p-5">
-                    <p className="text-sm font-bold text-primary mb-4">کارت {i + 1}</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <Field label="آیکون (ایموجی)">
-                        <Input value={stat.icon} onChange={(v) => setStat(i, "icon", v)} placeholder="book" />
-                      </Field>
-                      <Field label="عدد">
-                        <Input type="number" value={stat.value} onChange={(v) => setStat(i, "value", v)} placeholder="11" />
-                      </Field>
-                      <Field label="پسوند">
-                        <Input value={stat.suffix} onChange={(v) => setStat(i, "suffix", v)} placeholder="+" />
-                      </Field>
-                      <Field label="عنوان">
-                        <Input value={stat.title} onChange={(v) => setStat(i, "title", v)} placeholder="کتاب منتشر شده" />
-                      </Field>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-xs text-text-muted border-t border-primary-light/20 pt-4">
+                نکته: نوار آمار پایین بخش Hero (تأسیس، عناوین منتشرشده، پروانه‌ی نشر) به‌صورت خودکار
+                از «سال تأسیس» و «شماره پروانه نشر» در تب عمومی و تعداد واقعی کتاب‌های ثبت‌شده ساخته
+                می‌شود و نیازی به ورود دستی ندارد.
+              </p>
             </div>
           )}
 
@@ -554,7 +536,7 @@ function AdminSettings() {
                 </div>
                 <div className="bg-primary-bg/50 rounded-xl p-4">
                   <p className="text-xs font-bold text-accent mb-3">⭐ ارزش‌ها</p>
-                  <Textarea value={localSettings.values} onChange={(v) => set("values", v)} placeholder="ارزش‌ها..." rows={3} />
+                  <Textarea value={localSettings.values} onChange={(v) => set("values", v)} placeholder="اصالت، کیفیت و نوآوری..." rows={3} />
                 </div>
               </div>
             </div>
@@ -620,6 +602,15 @@ function AdminSettings() {
               <div className="bg-primary-bg/50 rounded-2xl p-5">
                 <h3 className="font-bold text-primary mb-4">تغییر رمز عبور</h3>
                 <div className="space-y-4">
+                  <Field label="رمز عبور فعلی" hint="برای تغییر رمز، ابتدا رمز فعلی خود را وارد کنید">
+                    <input
+                      type="password"
+                      value={currentPass}
+                      onChange={(e) => setCurrentPass(e.target.value)}
+                      placeholder="رمز عبور فعلی"
+                      className="w-full border-2 border-primary-light/30 rounded-xl p-3 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all bg-white"
+                    />
+                  </Field>
                   <Field label="رمز عبور جدید">
                     <input
                       type="password"
@@ -670,7 +661,7 @@ function AdminSettings() {
           {/* دکمه ذخیره پایین صفحه (به جز امنیت که خودش داره) */}
           {activeTab !== "security" && (
             <div className="mt-8 pt-6 border-t border-primary-light/20 flex justify-end">
-              <button onClick={handleSave} className="btn-gold flex items-center gap-2">
+              <button onClick={handleSave} disabled={settingsLoading} className="btn-gold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
