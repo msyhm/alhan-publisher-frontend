@@ -6,17 +6,15 @@ import useSiteSettings from "../hooks/useSiteSettings";
 
 const timeline = [
   { year: "۱۳۹۸", event: "تاسیس انتشارات الحان" },
-  { year: "۱۳۹۹", event: "انتشار اولین کتاب" },
+  { year: "۱۳۹۹", event: "همکاری با اساتید دانشگاه های برتر" },
   { year: "۱۴۰۰", event: "افتتاح فروشگاه اینترنتی" },
-  { year: "۱۴۰۲", event: "انتشار ۱۰امین کتاب" },
-  { year: "۱۴۰۴", event: "راه‌اندازی کتاب‌های صوتی" },
+  { year: "۱۴۰۲", event: "همکاری با پلتفرم های معتبر فروش" },
+  { year: "۱۴۰۴", event: "فعالیت های فرهنگی" },
 ];
 
 const teamMembers = [
   { name: "دکتر علی‌مراد حیدری", role: "مدیرعامل و بنیان‌گذار", bio: "دانشیار حقوق دانشگاه فردوسی مشهد" },
-  { name: "حسین ملائی",           role: "مدیر اجرایی",           bio: "کارشناس ارشد مدیریت فرهنگی" },
-  { name: "زهرا کریمی",           role: "ویراستار ارشد",          bio: "کارشناس ارشد زبان و ادبیات فارسی" },
-  { name: "محمد رضایی",           role: "طراح گرافیک",            bio: "کارشناس طراحی گرافیک" },
+  { name: "حسین ملائی",           role: "مدیر اجرایی",           bio: "کارشناس ارشد مدیریت فرهنگی و مهندسی کامپیوتر" },
 ];
 
 function About() {
@@ -176,7 +174,7 @@ function About() {
         <div className="relative">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">آماده همکاری با شما هستیم</h2>
           <p className="text-primary-light max-w-2xl mx-auto">
-            اگر نویسنده، پژوهشگر یا علاقه‌مند به همکاری با انتشارات الحان هستید، با ما تماس بگیرید.
+            اگر نویسنده، مترجم، پژوهشگر یا علاقه‌مند به همکاری با انتشارات الحان هستید، با ما تماس بگیرید.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link to="/submit-book" className="btn-gold inline-flex items-center justify-center gap-2">
