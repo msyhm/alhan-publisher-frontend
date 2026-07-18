@@ -50,7 +50,10 @@ function Account() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <Link to="/favorites" className="bg-primary-bg rounded-2xl p-5 text-center hover:bg-primary hover:text-white transition-colors">
+            <p className="font-bold">💛 علاقه‌مندی‌های من</p>
+          </Link>
           <Link to="/books" className="bg-primary-bg rounded-2xl p-5 text-center hover:bg-primary hover:text-white transition-colors">
             <p className="font-bold">مشاهده کتاب‌ها</p>
           </Link>

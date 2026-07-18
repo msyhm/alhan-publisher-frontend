@@ -22,6 +22,7 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminUsers from "./pages/AdminUsers";
 import AdminReports from "./pages/AdminReports";
 import AdminReviews from "./pages/AdminReviews";
+import Favorites from "./pages/Favorites";
 
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -83,6 +84,7 @@ function App() {
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/account" element={<PublicLayout><ProtectedUserRoute><Account /></ProtectedUserRoute></PublicLayout>} />
+        <Route path="/favorites" element={<PublicLayout><ProtectedUserRoute><Favorites /></ProtectedUserRoute></PublicLayout>} />
 
         {/* ─── صفحه ورود ادمین (بدون sidebar) ─── */}
         <Route path="/admin/login" element={<AdminLogin />} />

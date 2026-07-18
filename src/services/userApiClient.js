@@ -30,6 +30,7 @@ async function request(endpoint, options = {}) {
 const userApiClient = {
   get:  (endpoint)       => request(endpoint, { method: "GET" }),
   post: (endpoint, body) => request(endpoint, { method: "POST", body: JSON.stringify(body) }),
+  delete: (endpoint) => request(endpoint, { method: "DELETE" }),
 };
 
 export default userApiClient;
