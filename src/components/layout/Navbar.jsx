@@ -4,6 +4,7 @@ import useBooks from "../../hooks/useBooks";
 import Icon from "../ui/Icon";
 import logoBlack from "../../assets/logo-black.png";
 import authService from "../../services/authService";
+import { useCart } from "../../context/CartContext";
 
 const links = [
   { to: "/",            label: "خانه",       icon: "home"   },
@@ -23,6 +24,7 @@ function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const { books } = useBooks();
+  const { totalCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const desktopSearchRef = useRef(null);
@@ -221,6 +223,21 @@ function Navbar() {
             ))}
 
             <Link
+              to="/cart"
+              className="relative w-10 h-10 rounded-xl bg-primary-bg text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all"
+              title="سبد خرید"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+              </svg>
+              {totalCount > 0 && (
+                <span className="absolute -top-1.5 -left-1.5 min-w-[20px] h-5 px-1 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center">
+                  {totalCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
               to={isLoggedIn ? "/account" : "/login"}
               className="mr-2 relative w-10 h-10 rounded-xl bg-gradient-gold text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-105"
               title="حساب کاربری"
@@ -278,17 +295,35 @@ function Navbar() {
             </div>
           </Link>
 
-          {/* چپ: حساب کاربری */}
-          <Link
-            to={isLoggedIn ? "/account" : "/login"}
-            onClick={() => { setOpen(false); setIsSearchOpen(false); }}
-            className="justify-self-end relative w-9 h-9 rounded-xl bg-gradient-gold text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all"
-            aria-label="حساب کاربری"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </Link>
+          {/* چپ: سبد خرید + حساب کاربری */}
+          <div className="flex items-center gap-2 justify-self-end">
+            <Link
+              to="/cart"
+              onClick={() => { setOpen(false); setIsSearchOpen(false); }}
+              className="relative w-9 h-9 rounded-xl bg-primary-bg text-primary flex items-center justify-center hover:scale-105 transition-all"
+              aria-label="سبد خرید"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+              </svg>
+              {totalCount > 0 && (
+                <span className="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-0.5 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center">
+                  {totalCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              to={isLoggedIn ? "/account" : "/login"}
+              onClick={() => { setOpen(false); setIsSearchOpen(false); }}
+              className="relative w-9 h-9 rounded-xl bg-gradient-gold text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all"
+              aria-label="حساب کاربری"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
 

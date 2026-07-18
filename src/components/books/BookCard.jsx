@@ -1,11 +1,21 @@
 import { Link } from "react-router-dom";
 import Icon from "../ui/Icon";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { useCart } from "../../context/CartContext";
 
 function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
   const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const hasImage = Boolean(book.image) && !imgError;
+  const { addItem } = useCart();
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(book.id);
+    toast.success("به سبد خرید اضافه شد");
+  };
 
   return (
     <Link
@@ -73,6 +83,16 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
               چاپ {book.edition}
             </span>
           )}
+          {/* ✅ دکمه افزودن سریع به سبد خرید */}
+          <button
+            onClick={handleAddToCart}
+            title="افزودن به سبد خرید"
+            className="absolute bottom-2.5 left-2.5 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 backdrop-blur-sm shadow-lg flex items-center justify-center text-primary hover:bg-accent hover:text-white transition-all active:scale-90"
+          >
+            <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            </svg>
+          </button>
         </div>
 
         {/* ===== محتوا ===== */}

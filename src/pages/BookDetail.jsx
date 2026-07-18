@@ -10,6 +10,7 @@ import reviewsService from "../services/reviewsService";
 import InlineError from "../components/InlineError";
 import authService from "../services/authService";
 import favoritesService from "../services/favoritesService";
+import { useCart } from "../context/CartContext";
 
 // ─── مودال «تماس برای خرید» ────────────────────────────────────────────────
 function BuyModal({ book, onClose }) {
@@ -152,12 +153,18 @@ function RelatedBooksRow({ books }) {
 function BookDetail() {
   const { id } = useParams();
   const { books, loading: booksLoading, error: booksError } = useBooks();
+  const { addItem } = useCart();
   const [book,         setBook]         = useState(null);
   const [sameAuthor,   setSameAuthor]   = useState([]);
   const [sameCategory, setSameCategory] = useState([]);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [copied,       setCopied]       = useState(false);
   const [activeImage,  setActiveImage]  = useState(0);
+
+  const handleAddToCart = () => {
+    addItem(book.id);
+    toast.success("به سبد خرید اضافه شد");
+  };
 
   const [reviews,         setReviews]         = useState([]);
   const [reviewRating,    setReviewRating]    = useState(0);
@@ -463,7 +470,7 @@ const handleReviewSubmit = async (e) => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-l from-accent/5 to-primary/5 border border-accent/20 rounded-2xl p-5 flex items-center justify-between">
+          <div className="bg-gradient-to-l from-accent/5 to-primary/5 border border-accent/20 rounded-2xl p-5 flex items-center justify-between gap-3 flex-wrap">
             <div>
               <p className="text-xs text-text-muted mb-1">قیمت کتاب</p>
               {book.price ? (
@@ -475,12 +482,17 @@ const handleReviewSubmit = async (e) => {
                 <p className="text-base font-bold text-primary">تماس برای خرید</p>
               )}
             </div>
-            <button onClick={() => setShowBuyModal(true)} className="btn-gold flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              خرید کتاب
-            </button>
+            <div className="flex flex-col items-end gap-1.5">
+              <button onClick={handleAddToCart} className="btn-gold flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                </svg>
+                افزودن به سبد خرید
+              </button>
+              <button onClick={() => setShowBuyModal(true)} className="text-xs text-text-muted hover:text-accent underline transition-colors">
+                یا تماس مستقیم برای خرید
+              </button>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-card border border-primary-light/10 p-5">
