@@ -3,7 +3,6 @@ import Icon from "../ui/Icon";
 import { useState } from "react";
 
 function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
-  const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const hasImage = Boolean(book.image) && !imgError;
 
@@ -11,8 +10,6 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
     <Link
       to={"/books/" + book.id}
       className="group block h-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="bg-surface rounded-sm shadow-card transition-all duration-500 overflow-hidden h-full flex flex-col relative border border-primary/10 group-hover:-translate-y-1.5 group-hover:shadow-elegant-hover">
 
@@ -127,14 +124,10 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
           </div>
         </div>
 
-        {/* روبان نشانگر — به‌جای خط نورانی، مثل روبان کتاب که با هاور کمی بیرون می‌زند */}
+        {/* روبان نشانگر — نوار لبه‌ای که با هاور به‌آرامی باز می‌شود، بدون تداخل با نشان‌های گوشه‌ی تصویر */}
         <div
-          className="absolute top-0 right-5 w-4 transition-transform duration-300 ease-out origin-top"
-          style={{
-            height: isHovered ? "22px" : "10px",
-            background: "var(--color-ribbon)",
-            clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%)",
-          }}
+          className="absolute inset-y-0 left-0 w-[3px] origin-top scale-y-0 transition-transform duration-500 ease-out group-hover:scale-y-100"
+          style={{ background: "var(--color-ribbon)" }}
         />
       </div>
     </Link>
