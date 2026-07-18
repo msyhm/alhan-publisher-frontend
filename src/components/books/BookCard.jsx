@@ -3,6 +3,7 @@ import Icon from "../ui/Icon";
 import { useState } from "react";
 
 function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
+  const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const hasImage = Boolean(book.image) && !imgError;
 
@@ -10,8 +11,10 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
     <Link
       to={"/books/" + book.id}
       className="group block h-full"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="bg-surface rounded-sm shadow-card transition-all duration-500 overflow-hidden h-full flex flex-col relative border border-primary/10 group-hover:-translate-y-1.5 group-hover:shadow-elegant-hover">
+      <div className="bg-white rounded-2xl shadow-card hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col relative border border-primary/5">
 
         {/* ===== تصویر ===== */}
         <div className={`relative overflow-hidden bg-primary-bg w-full shrink-0 ${aspectClass}`}>
@@ -46,15 +49,18 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
             </div>
           )}
 
+          {/* Overlay گرادینت */}
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
           {/* نشان‌ها */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             {book.category && (
-              <span className="bg-accent text-white shadow-sm text-xs px-2.5 py-1 rounded-sm font-medium">
+              <span className="bg-accent/90 text-white backdrop-blur-sm shadow-lg text-xs px-2.5 py-1 rounded-full">
                 {book.category}
               </span>
             )}
             {book.isAudio && (
-              <span className="bg-primary-dark text-white shadow-sm flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm font-medium">
+              <span className="bg-blue-500/90 text-white backdrop-blur-sm shadow-lg flex items-center gap-1 text-xs px-2.5 py-1 rounded-full">
                 <Icon name="headphones" size={12} strokeWidth={1.75} />
                 صوتی
               </span>
@@ -63,7 +69,7 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
 
           {/* ✅ badge چاپ — گوشه چپ بالا */}
           {book.edition && (
-            <span className="absolute top-3 left-3 bg-surface text-primary border border-primary/15 text-[10px] font-bold px-2 py-0.5 rounded-sm shadow-sm">
+            <span className="absolute top-3 left-3 bg-white/90 text-primary backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
               چاپ {book.edition}
             </span>
           )}
@@ -118,12 +124,16 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
               )}
             </div>
 
-            <span className="w-full text-center bg-primary-bg text-primary font-medium text-xs px-3 py-2 rounded-sm group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-sm whitespace-nowrap">
+            <span className="w-full text-center bg-primary-bg text-primary font-medium text-xs px-3 py-2 rounded-xl group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-lg whitespace-nowrap">
               مشاهده جزئیات
             </span>
           </div>
         </div>
 
+        {/* خط نورانی در هاور */}
+        <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-accent/50 to-accent transition-all duration-500 ${
+          isHovered ? "opacity-100" : "opacity-0"
+        }`} />
       </div>
     </Link>
   );

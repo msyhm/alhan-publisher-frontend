@@ -9,6 +9,7 @@ import useSiteSettings from "../hooks/useSiteSettings";
 import reviewsService from "../services/reviewsService";
 import InlineError from "../components/InlineError";
 import authService from "../services/authService";
+import favoritesService from "../services/favoritesService";
 
 // ─── مودال «تماس برای خرید» ────────────────────────────────────────────────
 function BuyModal({ book, onClose }) {
@@ -140,7 +141,7 @@ function RelatedBooksRow({ books }) {
     >
       {books.map((rel) => (
         <div key={rel.id} className="w-[45%] xs:w-[38%] sm:w-auto shrink-0 sm:shrink">
-          <BookCard book={rel} />
+          <BookCard book={rel} aspectClass="aspect-[5/6]" />
         </div>
       ))}
     </div>
@@ -164,6 +165,8 @@ function BookDetail() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [currentUser,     setCurrentUser]     = useState(null);
   const [checkingAuth,    setCheckingAuth]    = useState(true);
+  const [isFavorite,      setIsFavorite]      = useState(false);
+  const [favBusy,         setFavBusy]         = useState(false);
 
   useEffect(() => {
     if (booksLoading) return;
@@ -197,6 +200,43 @@ function BookDetail() {
       .catch(() => setCurrentUser(null))
       .finally(() => setCheckingAuth(false));
   }, []);
+
+  useEffect(() => {
+    if (!currentUser || !book) {
+      setIsFavorite(false);
+      return;
+    }
+    favoritesService
+      .getAll()
+      .then((res) => {
+        const ids = Array.isArray(res?.books) ? res.books.map((b) => b.id) : [];
+        setIsFavorite(ids.includes(book.id));
+      })
+      .catch(() => setIsFavorite(false));
+  }, [currentUser, book]);
+
+  const handleToggleFavorite = async () => {
+    if (!currentUser) {
+      toast.error("برای افزودن به علاقه‌مندی‌ها ابتدا وارد حساب کاربری خود شوید");
+      return;
+    }
+    setFavBusy(true);
+    try {
+      if (isFavorite) {
+        await favoritesService.remove(book.id);
+        setIsFavorite(false);
+        toast.success("از علاقه‌مندی‌ها حذف شد");
+      } else {
+        await favoritesService.add(book.id);
+        setIsFavorite(true);
+        toast.success("به علاقه‌مندی‌ها اضافه شد");
+      }
+    } catch (err) {
+      toast.error(err.message || "خطا در به‌روزرسانی علاقه‌مندی‌ها");
+    } finally {
+      setFavBusy(false);
+    }
+  };
 
   const avgRating = reviews.length
     ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
@@ -351,6 +391,19 @@ const handleReviewSubmit = async (e) => {
             )}
 
             <div className="flex gap-3 mt-4 justify-center">
+              <button
+                onClick={handleToggleFavorite}
+                disabled={favBusy}
+                title={isFavorite ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}
+                className={`w-12 h-12 rounded-full transition-all flex items-center justify-center disabled:opacity-60 ${
+                  isFavorite ? "bg-red-100 text-red-500" : "bg-primary-bg hover:bg-red-100 hover:text-red-500 text-primary"
+                }`}
+              >
+                <svg className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+              </button>
+
               <button
                 onClick={handleShare}
                 title={copied ? "لینک کپی شد!" : "کپی لینک"}
