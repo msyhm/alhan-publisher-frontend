@@ -242,7 +242,7 @@ function LatestBooks() {
                   maxWidth: "265px",
                 }}
               >
-                <BookCard book={book} aspectClass="aspect-[5/6]" />
+                <BookCard book={book} />
               </div>
             ))}
           </div>

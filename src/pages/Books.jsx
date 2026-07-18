@@ -350,7 +350,7 @@ function Books() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
             {paginatedBooks.map((book, index) => (
               <div key={book.id} className="animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
-                <BookCard book={book} aspectClass="aspect-[5/6]" />
+                <BookCard book={book} />
               </div>
             ))}
           </div>

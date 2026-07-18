@@ -124,11 +124,6 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
           </div>
         </div>
 
-        {/* روبان نشانگر — نوار لبه‌ای که با هاور به‌آرامی باز می‌شود، بدون تداخل با نشان‌های گوشه‌ی تصویر */}
-        <div
-          className="absolute inset-y-0 left-0 w-[3px] origin-top scale-y-0 transition-transform duration-500 ease-out group-hover:scale-y-100"
-          style={{ background: "var(--color-ribbon)" }}
-        />
       </div>
     </Link>
   );
