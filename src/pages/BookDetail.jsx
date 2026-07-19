@@ -137,7 +137,7 @@ function StarsInput({ value, onChange }) {
 function RelatedBooksRow({ books }) {
   return (
     <div
-      className="flex sm:grid sm:grid-cols-2 md:grid-cols-4 gap-4 overflow-x-auto sm:overflow-visible
+      className="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible
         pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {books.map((rel) => (

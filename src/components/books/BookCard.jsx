@@ -96,10 +96,10 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
         </div>
 
         {/* ===== محتوا ===== */}
-        <div className="p-3 sm:p-4 md:p-5 flex flex-col flex-1">
+        <div className="p-2.5 sm:p-3 flex flex-col flex-1">
 
           {/* عنوان */}
-          <h3 className="text-sm sm:text-base font-bold text-primary leading-relaxed group-hover:text-accent transition-colors line-clamp-2 min-h-[3rem] sm:min-h-[3.5rem]">
+          <h3 className="text-sm sm:text-base font-bold text-primary leading-snug group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
             {book.title}
           </h3>
 
@@ -112,7 +112,7 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
           </p>
 
           {/* سال و صفحات */}
-          <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] sm:text-xs text-text-muted">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] sm:text-xs text-text-muted">
             {book.year && (
               <span className="flex items-center gap-1">
                 <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,22 +131,16 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
             )}
           </div>
 
-          {/* ✅ قیمت + دکمه — زیر هم، نه کنار هم، تا رو کارت‌های باریک روی هم نیفتن */}
-          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-primary-light/10 flex flex-col gap-2">
-            <div className="min-w-0">
-              {book.price ? (
-                <p className="text-sm font-bold text-accent">
-                  {Number(book.price).toLocaleString("fa-IR")}
-                  <span className="text-[10px] font-normal text-text-muted mr-0.5">تومان</span>
-                </p>
-              ) : (
-                <p className="text-xs text-text-muted">تماس برای خرید</p>
-              )}
-            </div>
-
-            <span className="w-full text-center bg-primary-bg text-primary font-medium text-xs px-3 py-2 rounded-xl group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-lg whitespace-nowrap">
-              مشاهده جزئیات
-            </span>
+          {/* ✅ قیمت — چسبیده به پایین کارت */}
+          <div className="mt-auto pt-2">
+            {book.price ? (
+              <p className="text-sm font-bold text-accent">
+                {Number(book.price).toLocaleString("fa-IR")}
+                <span className="text-[10px] font-normal text-text-muted mr-0.5">تومان</span>
+              </p>
+            ) : (
+              <p className="text-xs text-text-muted">تماس برای خرید</p>
+            )}
           </div>
         </div>
 
