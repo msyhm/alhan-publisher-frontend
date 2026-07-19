@@ -140,18 +140,6 @@ function RelatedBooksRow({ books }) {
   const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const DRAG_THRESHOLD = 6;
 
-  useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    const onWheel = (e) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      e.preventDefault();
-      slider.scrollLeft += e.deltaY;
-    };
-    slider.addEventListener("wheel", onWheel, { passive: false });
-    return () => slider.removeEventListener("wheel", onWheel);
-  }, []);
-
   const handleSliderClickCapture = useCallback((e) => {
     if (dragRef.current.moved) {
       e.preventDefault();
