@@ -142,7 +142,7 @@ function RelatedBooksRow({ books }) {
     >
       {books.map((rel) => (
         <div key={rel.id} className="w-[45%] xs:w-[38%] sm:w-auto shrink-0 sm:shrink">
-          <BookCard book={rel} aspectClass="aspect-[5/6]" />
+          <BookCard book={rel} aspectClass="aspect-[2/3]" />
         </div>
       ))}
     </div>

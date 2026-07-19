@@ -37,12 +37,12 @@ function LatestBooks() {
   useEffect(() => {
     const updateItemsPerView = () => {
       const width = window.innerWidth;
-     if (width < 480) setItemsPerView(1.1);
-      else if (width < 640) setItemsPerView(1.6);
-      else if (width < 768) setItemsPerView(2);
-      else if (width < 1024) setItemsPerView(2.7);
-      else if (width < 1280) setItemsPerView(3.3);
-      else setItemsPerView(4.2); 
+     if (width < 480) setItemsPerView(1.4);
+      else if (width < 640) setItemsPerView(2);
+      else if (width < 768) setItemsPerView(2.5);
+      else if (width < 1024) setItemsPerView(3.4);
+      else if (width < 1280) setItemsPerView(4.1);
+      else setItemsPerView(5.3); 
     };
     updateItemsPerView();
     window.addEventListener("resize", updateItemsPerView);
@@ -238,11 +238,11 @@ function LatestBooks() {
                 className="book-card-wrapper flex-none shrink-0"
                 style={{
                   width: `${cardWidthPercent}%`,
-                  minWidth: "185px",
-                  maxWidth: "265px",
+                  minWidth: "150px",
+                  maxWidth: "212px",
                 }}
               >
-                <BookCard book={book} aspectClass="aspect-[5/6]" />
+                <BookCard book={book} aspectClass="aspect-[2/3]" />
               </div>
             ))}
           </div>
