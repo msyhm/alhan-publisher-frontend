@@ -2,7 +2,7 @@ import PageMeta from "../components/PageMeta";
 import Icon from "../components/ui/Icon";
 import BookCard from "../components/books/BookCard";
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import useBooks from "../hooks/useBooks";
 import useSiteSettings from "../hooks/useSiteSettings";
@@ -133,15 +133,86 @@ function StarsInput({ value, onChange }) {
   );
 }
 
-// ─── ردیف افقی کارت‌های مرتبط (موبایل: اسکرول افقی، دسکتاپ: گرید) ──────────
+// ─── ردیف افقی کارت‌های مرتبط (همه‌ی سایزها: اسکرول افقی با درگ موس/تاچ/ویل) ──
 function RelatedBooksRow({ books }) {
+  const sliderRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
+  const DRAG_THRESHOLD = 6;
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      slider.scrollLeft += e.deltaY;
+    };
+    slider.addEventListener("wheel", onWheel, { passive: false });
+    return () => slider.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const handleSliderClickCapture = useCallback((e) => {
+    if (dragRef.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragRef.current.moved = false;
+    }
+  }, []);
+
+  const handleDragStart = useCallback((e) => {
+    e.preventDefault();
+  }, []);
+
+  const handleMouseDown = useCallback((e) => {
+    if (!sliderRef.current) return;
+    const slider = sliderRef.current;
+    const rect = slider.getBoundingClientRect();
+    dragRef.current = {
+      active: true,
+      startX: e.clientX - rect.left,
+      scrollLeft: slider.scrollLeft,
+      moved: false,
+    };
+    setIsDragging(true);
+  }, []);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!dragRef.current.active || !sliderRef.current) return;
+    e.preventDefault();
+    const slider = sliderRef.current;
+    const rect = slider.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const walk = x - dragRef.current.startX;
+    if (Math.abs(walk) > DRAG_THRESHOLD) dragRef.current.moved = true;
+    slider.scrollLeft = dragRef.current.scrollLeft - walk;
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    setIsDragging(false);
+  }, []);
+
   return (
     <div
-      className="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto sm:overflow-visible
-        pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      ref={sliderRef}
+      onClickCapture={handleSliderClickCapture}
+      onDragStart={handleDragStart}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      className={`flex gap-4 overflow-x-auto pb-2 sm:pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 select-none
+        [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
+        ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
     >
       {books.map((rel) => (
-        <div key={rel.id} className="w-[45%] xs:w-[38%] sm:w-auto shrink-0 sm:shrink">
+        <div
+          key={rel.id}
+          draggable={false}
+          className="w-[45%] xs:w-[38%] sm:w-[200px] shrink-0"
+        >
           <BookCard book={rel} aspectClass="aspect-[2/3]" />
         </div>
       ))}
