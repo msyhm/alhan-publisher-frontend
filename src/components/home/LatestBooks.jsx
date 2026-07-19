@@ -28,6 +28,8 @@ function LatestBooks() {
   const sliderRef = useRef(null);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [isDragging, setIsDragging] = useState(false);
+  const [canScrollBack, setCanScrollBack] = useState(false);
+  const [canScrollForward, setCanScrollForward] = useState(false);
   const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const DRAG_THRESHOLD = 6;
 
@@ -70,6 +72,32 @@ function LatestBooks() {
 
   const goForward = () => nudge(1);
   const goBackward = () => nudge(-1);
+
+  const updateScrollButtons = useCallback(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+    const maxScroll = slider.scrollWidth - slider.clientWidth;
+    if (maxScroll <= 1) {
+      setCanScrollBack(false);
+      setCanScrollForward(false);
+      return;
+    }
+    const scrolled = Math.abs(slider.scrollLeft);
+    setCanScrollBack(scrolled > 2);
+    setCanScrollForward(scrolled < maxScroll - 2);
+  }, []);
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+    updateScrollButtons();
+    slider.addEventListener("scroll", updateScrollButtons, { passive: true });
+    window.addEventListener("resize", updateScrollButtons);
+    return () => {
+      slider.removeEventListener("scroll", updateScrollButtons);
+      window.removeEventListener("resize", updateScrollButtons);
+    };
+  }, [updateScrollButtons, itemsPerView, totalItems]);
 
   useEffect(() => {
     const slider = sliderRef.current;
@@ -198,20 +226,22 @@ function LatestBooks() {
         <div className="relative py-4">
           <button
             onClick={goForward}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95"
+            disabled={!canScrollForward}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-white/95 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-xl active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
             aria-label="کتاب بعدی"
             style={{ marginLeft: "-4px" }}
           >
-            <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+            <ChevronLeftIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
           </button>
 
           <button
             onClick={goBackward}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-2xl active:scale-95"
+            disabled={!canScrollBack}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-white/95 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center transition-all duration-300 hover:bg-accent hover:text-white hover:scale-110 hover:shadow-xl active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
             aria-label="کتاب قبلی"
             style={{ marginRight: "-4px" }}
           >
-            <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+            <ChevronRightIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
           </button>
 
           <div
