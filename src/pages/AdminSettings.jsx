@@ -60,6 +60,8 @@ function AdminSettings() {
   const [newUniName, setNewUniName] = useState("");
   const [newUniLogo, setNewUniLogo] = useState("");
   const [editingUniId, setEditingUniId] = useState(null);
+  const [newSlideImage, setNewSlideImage] = useState("");
+  const [newSlideLink, setNewSlideLink] = useState("");
 
   // ✅ FIX: قبلاً localSettings فقط یک‌بار، با useState(settings)، مقداردهی
   // می‌شد — یعنی با مقدار پیش‌فرض قبل از پایان بارگذاری از سرور. اگر ادمین
@@ -100,6 +102,41 @@ function AdminSettings() {
       u.id === id ? { ...u, [key]: value } : u
     );
     setLocalSettings((prev) => ({ ...prev, universities: unis }));
+  };
+
+  // ✅ اسلایدهای بنر Hero
+  const addHeroSlide = () => {
+    if (!newSlideImage) return;
+    const slides = localSettings.heroSlides || [];
+    const newSlide = {
+      id: Date.now(),
+      image: newSlideImage,
+      link: newSlideLink.trim(),
+    };
+    setLocalSettings((prev) => ({ ...prev, heroSlides: [...slides, newSlide] }));
+    setNewSlideImage("");
+    setNewSlideLink("");
+  };
+
+  const removeHeroSlide = (id) => {
+    const slides = (localSettings.heroSlides || []).filter((s) => s.id !== id);
+    setLocalSettings((prev) => ({ ...prev, heroSlides: slides }));
+  };
+
+  const updateHeroSlide = (id, key, value) => {
+    const slides = (localSettings.heroSlides || []).map((s) =>
+      s.id === id ? { ...s, [key]: value } : s
+    );
+    setLocalSettings((prev) => ({ ...prev, heroSlides: slides }));
+  };
+
+  const moveHeroSlide = (id, direction) => {
+    const slides = [...(localSettings.heroSlides || [])];
+    const index = slides.findIndex((s) => s.id === id);
+    const target = index + direction;
+    if (index === -1 || target < 0 || target >= slides.length) return;
+    [slides[index], slides[target]] = [slides[target], slides[index]];
+    setLocalSettings((prev) => ({ ...prev, heroSlides: slides }));
   };
 
   const handleSave = () => {
@@ -234,21 +271,133 @@ function AdminSettings() {
             </div>
           )}
 
-          {/* ===== صفحه اصلی (هیرو) ===== */}
+          {/* ===== صفحه اصلی (هیرو) — مدیریت اسلایدهای بنر ===== */}
           {activeTab === "hero" && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-bold text-primary mb-6">محتوای صفحه اصلی (Hero)</h2>
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-bold text-primary mb-1">اسلایدهای بنر صفحه اصلی</h2>
+                <p className="text-sm text-text-muted">
+                  تصاویری که در بالای صفحه اصلی به‌صورت اسلایدر نمایش داده می‌شوند. هر اسلاید
+                  می‌تواند با کلیک به یک صفحه (مثلاً یک کتاب) لینک شود یا فقط تصویر باشد.
+                  برای بهترین نتیجه، تصاویر را با نسبت عرض‌به‌ارتفاع حدود ۵:۲ آپلود کنید تا
+                  بدون افتادگی برش داده شوند.
+                </p>
+              </div>
 
-              <Field label="زیرعنوان اصلی">
-                <Textarea value={localSettings.heroSubtitle} onChange={(v) => set("heroSubtitle", v)} placeholder="ناشر آثار علمی، دانشگاهی..." rows={3} />
-              </Field>
+              {/* افزودن اسلاید جدید */}
+              <div className="bg-primary-bg/50 rounded-2xl p-5 border-2 border-dashed border-primary-light/30">
+                <h3 className="font-bold text-primary mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  افزودن اسلاید جدید
+                </h3>
+                <div className="space-y-3">
+                  <ImageUploader
+                    value={newSlideImage}
+                    onChange={setNewSlideImage}
+                    label="تصویر اسلاید"
+                  />
+                  <Field label="لینک (اختیاری)" hint="مثلاً /books/12 برای صفحه‌ی یک کتاب، یا یک آدرس کامل https://... — اگر خالی بماند، اسلاید فقط تصویر است و کلیک‌پذیر نیست.">
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={newSlideLink}
+                      onChange={(e) => setNewSlideLink(e.target.value)}
+                      placeholder="/books/12"
+                      className="w-full border-2 border-primary-light/30 rounded-xl p-3 text-left focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all bg-white"
+                    />
+                  </Field>
+                  <button
+                    onClick={addHeroSlide}
+                    disabled={!newSlideImage}
+                    className="btn-gold text-sm px-6 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    افزودن اسلاید
+                  </button>
+                </div>
+              </div>
 
-              {/* ── انتخاب کتاب ویژه ── */}
+              {/* لیست اسلایدهای موجود */}
+              <div className="space-y-3">
+                {(localSettings.heroSlides || []).length === 0 ? (
+                  <div className="text-center py-10 text-text-muted text-sm">
+                    هنوز اسلایدی اضافه نشده است — تا زمانی که حداقل یک اسلاید اضافه نشود،
+                    این بخش در صفحه اصلی نمایش داده نمی‌شود.
+                  </div>
+                ) : (
+                  (localSettings.heroSlides || []).map((slide, index) => {
+                    const slides = localSettings.heroSlides || [];
+                    return (
+                      <div
+                        key={slide.id}
+                        className="bg-white rounded-2xl border-2 border-primary-light/20 p-4 flex items-center gap-4"
+                      >
+                        {/* پیش‌نمایش تصویر با همان نسبت واقعی روی سایت */}
+                        <div className="w-28 sm:w-36 aspect-[5/2] rounded-xl overflow-hidden shrink-0 shadow border border-primary-light/20 bg-primary-bg">
+                          <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                        </div>
+
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <input
+                            type="text"
+                            dir="ltr"
+                            value={slide.link}
+                            onChange={(e) => updateHeroSlide(slide.id, "link", e.target.value)}
+                            placeholder="بدون لینک (فقط تصویر)"
+                            className="w-full border-2 border-primary-light/30 rounded-xl p-2.5 text-sm text-left focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+                          />
+                          <p className="text-xs text-text-muted">
+                            اسلاید {index + 1} از {slides.length}
+                          </p>
+                        </div>
+
+                        {/* جابه‌جایی ترتیب */}
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <button
+                            onClick={() => moveHeroSlide(slide.id, -1)}
+                            disabled={index === 0}
+                            className="w-7 h-7 rounded-lg border-2 border-primary-light/30 flex items-center justify-center text-primary hover:border-accent hover:text-accent transition-all disabled:opacity-30 disabled:pointer-events-none"
+                            title="جابه‌جایی به بالا"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => moveHeroSlide(slide.id, 1)}
+                            disabled={index === slides.length - 1}
+                            className="w-7 h-7 rounded-lg border-2 border-primary-light/30 flex items-center justify-center text-primary hover:border-accent hover:text-accent transition-all disabled:opacity-30 disabled:pointer-events-none"
+                            title="جابه‌جایی به پایین"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* حذف */}
+                        <button
+                          onClick={() => removeHeroSlide(slide.id)}
+                          className="w-9 h-9 rounded-xl border-2 border-red-200 flex items-center justify-center text-red-400 hover:border-red-400 hover:text-red-600 hover:bg-red-50 transition-all shrink-0"
+                          title="حذف"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* ── انتخاب کتاب ویژه (برای کارت جمع‌وجور موبایل/تبلت زیر اسلایدر) ── */}
               <div className="border-t border-primary-light/20 pt-5">
-                <h3 className="font-bold text-primary mb-1">کتاب ویژه در Hero</h3>
+                <h3 className="font-bold text-primary mb-1">کتاب ویژه</h3>
                 <p className="text-xs text-text-muted mb-4">
-                  کتابی که روی کارت سمت راست صفحه اصلی نمایش داده می‌شود را انتخاب کنید.
-                  اگر کتابی انتخاب نشود، حرف لوگو نمایش داده می‌شود.
+                  در نسخه‌ی موبایل و تبلت، یک کارت جمع‌وجور از این کتاب زیر اسلایدر نمایش داده
+                  می‌شود. اگر کتابی انتخاب نشود، آخرین کتاب اضافه‌شده به‌صورت خودکار نمایش داده می‌شود.
                 </p>
 
                 {books.length === 0 ? (
@@ -263,7 +412,7 @@ function AdminSettings() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {/* گزینه: هیچ کتابی (نمایش لوگو) */}
+                    {/* گزینه: انتخاب خودکار (آخرین کتاب) */}
                     <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
                       !localSettings.featuredBookId
                         ? "border-accent bg-accent/5"
@@ -281,8 +430,8 @@ function AdminSettings() {
                         <span className="text-white text-xl font-bold">{localSettings.logoLetter || "آ"}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-primary text-sm">نمایش لوگو (پیش‌فرض)</p>
-                        <p className="text-xs text-text-muted mt-0.5">حرف لوگو روی پس‌زمینه طلایی</p>
+                        <p className="font-medium text-primary text-sm">انتخاب خودکار (پیش‌فرض)</p>
+                        <p className="text-xs text-text-muted mt-0.5">آخرین کتاب اضافه‌شده</p>
                       </div>
                     </label>
 
@@ -344,12 +493,6 @@ function AdminSettings() {
                   </div>
                 )}
               </div>
-
-              <p className="text-xs text-text-muted border-t border-primary-light/20 pt-4">
-                نکته: نوار آمار پایین بخش Hero (تأسیس، عناوین منتشرشده، پروانه‌ی نشر) به‌صورت خودکار
-                از «سال تأسیس» و «شماره پروانه نشر» در تب عمومی و تعداد واقعی کتاب‌های ثبت‌شده ساخته
-                می‌شود و نیازی به ورود دستی ندارد.
-              </p>
             </div>
           )}
 

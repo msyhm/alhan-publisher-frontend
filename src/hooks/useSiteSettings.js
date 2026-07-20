@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS = {
   publishLicense: "۱۴۹۳۳",
   heroSubtitle: "ناشر آثار علمی، دانشگاهی، فرهنگی و ادبی با هدف ارتقای دانش و فرهنگ در جامعه",
   featuredBookId: null,
+  heroSlides: [], // ✅ اسلایدهای بنر Hero — هر کدام: { id, image, link }
   universities: DEFAULT_UNIVERSITIES,
   aboutText: "انتشارات الحان با هدف انتشار آثار علمی، دانشگاهی و فرهنگی فعالیت می‌کند و تاکنون ده‌ها اثر ارزشمند را منتشر کرده است.",
   vision:  "تبدیل به یکی از برترین ناشران علمی",

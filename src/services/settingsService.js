@@ -9,7 +9,7 @@ import { setToken, clearToken } from "./authToken.js";
 // (general/hero/contact/social/about/universities)
 const SECTION_FIELDS = {
   general:      ["publisherName", "publisherNameAccent", "logoLetter", "foundingYear", "slogan", "publishLicense"],
-  hero:         ["heroSubtitle", "featuredBookId"],
+  hero:         ["heroSubtitle", "featuredBookId", "heroSlides"],
   about:        ["aboutText", "vision", "mission", "values"],
   contact:      ["address", "phone", "phoneRaw", "email"],
   social:       ["instagram", "telegram"],
