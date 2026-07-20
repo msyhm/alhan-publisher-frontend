@@ -1,10 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import userApiClient from "../services/userApiClient";
 import LoadingSpinner from "./LoadingSpinner";
 
 function ProtectedUserRoute({ children }) {
   const [status, setStatus] = useState("loading");
+  const location = useLocation();
 
   useEffect(() => {
     userApiClient.get("/users/me")
@@ -13,7 +14,9 @@ function ProtectedUserRoute({ children }) {
   }, []);
 
   if (status === "loading") return <LoadingSpinner fullPage />;
-  if (status === "redirect") return <Navigate to="/login" replace />;
+  if (status === "redirect") {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
   return children;
 }
 

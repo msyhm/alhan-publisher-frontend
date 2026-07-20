@@ -14,6 +14,7 @@ const SECTION_FIELDS = {
   contact:      ["address", "phone", "phoneRaw", "email"],
   social:       ["instagram", "telegram"],
   universities: ["universities"],
+  shipping:     ["shippingCost"],
 };
 
 // تبدیل آبجکت تخت (flat) به بخش‌های جدا برای ذخیره در بک‌اند

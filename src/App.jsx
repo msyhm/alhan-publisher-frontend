@@ -35,6 +35,7 @@ import Account from "./pages/Account";
 import ProtectedUserRoute from "./components/ProtectedUserRoute";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 
 // ✅ جدا کردن layout عمومی از ادمین
 function PublicLayout({ children }) {
@@ -88,7 +89,8 @@ function App() {
         <Route path="/account" element={<PublicLayout><ProtectedUserRoute><Account /></ProtectedUserRoute></PublicLayout>} />
         <Route path="/favorites" element={<PublicLayout><ProtectedUserRoute><Favorites /></ProtectedUserRoute></PublicLayout>} />
         <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
-        <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
+        <Route path="/checkout" element={<PublicLayout><ProtectedUserRoute><Checkout /></ProtectedUserRoute></PublicLayout>} />
+        <Route path="/order-confirmation/:id" element={<PublicLayout><ProtectedUserRoute><OrderConfirmation /></ProtectedUserRoute></PublicLayout>} />
 
         {/* ─── صفحه ورود ادمین (بدون sidebar) ─── */}
         <Route path="/admin/login" element={<AdminLogin />} />

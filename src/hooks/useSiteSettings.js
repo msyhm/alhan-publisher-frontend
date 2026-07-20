@@ -32,6 +32,7 @@ const DEFAULT_SETTINGS = {
   email:    "alhannasher@gmail.com",
   instagram: "https://instagram.com/AlhanPublish",
   telegram:  "https://t.me/AlhanPublish",
+  shippingCost: 50000,
 };
 
 const DEFAULT_CREDENTIALS = {

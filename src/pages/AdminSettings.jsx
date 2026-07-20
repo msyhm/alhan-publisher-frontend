@@ -10,9 +10,10 @@ const TABS = [
   { id: "general",      label: "عمومی",           icon: "settings" },
   { id: "hero",         label: "صفحه اصلی",       icon: "home" },
   { id: "universities", label: "دانشگاه‌ها",       icon: "book" },
-  { id: "about",        label: "درباره ما",        icon: "info" },
+  { id: "about",        label: "درباره ما",       icon: "info" },
   { id: "contact",      label: "تماس",             icon: "phone" },
   { id: "social",       label: "شبکه‌های اجتماعی", icon: "link" },
+  { id: "shipping",     label: "هزینه ارسال",     icon: "map-pin" },
   { id: "security",     label: "امنیت",            icon: "lock" },
 ];
 
@@ -572,6 +573,21 @@ function AdminSettings() {
               </Field>
               <Field label="لینک تلگرام">
                 <Input value={localSettings.telegram} onChange={(v) => set("telegram", v)} placeholder="https://t.me/..." />
+              </Field>
+            </div>
+          )}
+
+          {/* ===== هزینه ارسال ===== */}
+          {activeTab === "shipping" && (
+            <div className="space-y-5">
+              <h2 className="text-xl font-bold text-primary mb-6">هزینه ارسال پستی</h2>
+              <Field label="هزینه ارسال (تومان)" hint="این مبلغ به‌صورت ثابت به سبد خرید هر سفارش اضافه می‌شود">
+                <Input
+                  type="number"
+                  value={localSettings.shippingCost}
+                  onChange={(v) => set("shippingCost", Number(v) || 0)}
+                  placeholder="50000"
+                />
               </Field>
             </div>
           )}
