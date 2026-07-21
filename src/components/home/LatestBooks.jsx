@@ -195,7 +195,7 @@ function LatestBooks() {
   return (
     <section className="pt-4 sm:pt-6 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-background to-background/95">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col items-start sm:flex-row sm:items-end sm:justify-between gap-2.5 sm:gap-4 mb-4 sm:mb-6">
+        <div className="sm:flex sm:items-end sm:justify-between sm:gap-4 mb-4 sm:mb-6">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-primary/5 px-3 py-1 rounded-full text-primary text-xs sm:text-sm mb-1.5 border border-primary/10 backdrop-blur-sm">
               <BookOpenIcon />
@@ -216,7 +216,7 @@ function LatestBooks() {
 
           <Link
             to="/books"
-            className="w-fit self-end shrink-0 text-xs sm:text-sm text-primary font-bold border-2 border-primary px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
+            className="inline-block mt-2 sm:mt-0 sm:self-end shrink-0 text-xs sm:text-sm text-primary font-bold border-2 border-primary px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
           >
             همه کتاب‌ها
           </Link>
@@ -255,7 +255,7 @@ function LatestBooks() {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`flex gap-2.5 sm:gap-3 overflow-x-auto py-4 px-6 sm:px-8 select-none
+            className={`flex gap-2.5 sm:gap-3 overflow-x-auto py-4 px-2 sm:px-4 select-none
               [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
               ${isDragging ? "cursor-grabbing" : "cursor-grab"}
             `}
