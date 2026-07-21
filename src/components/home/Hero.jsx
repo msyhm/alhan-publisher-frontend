@@ -88,7 +88,7 @@ function Hero() {
   if (slides.length === 0) return null;
 
   return (
-    <section className="pt-24 sm:pt-28 pb-6 sm:pb-8 bg-background">
+    <section className="pt-24 sm:pt-28 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div
           className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg bg-primary-bg"
