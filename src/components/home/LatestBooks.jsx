@@ -194,7 +194,7 @@ function LatestBooks() {
   const cardWidthPercent = 100 / itemsPerView;
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-background to-background/95">
+    <section className="pt-4 sm:pt-6 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-background to-background/95">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
