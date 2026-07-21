@@ -196,9 +196,9 @@ function LatestBooks() {
   return (
     <section className="pt-4 sm:pt-6 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-background to-background/95">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2.5 sm:gap-4 mb-4 sm:mb-6">
           <div>
-            <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-1.5 rounded-full text-primary text-xs sm:text-sm mb-2 border border-primary/10 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-1.5 bg-primary/5 px-3 py-1 rounded-full text-primary text-xs sm:text-sm mb-1.5 border border-primary/10 backdrop-blur-sm">
               <BookOpenIcon />
               <span>جدیدترین آثار</span>
               <span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span>
@@ -206,11 +206,11 @@ function LatestBooks() {
                 {totalItems} کتاب
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+            <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
               <span className="text-primary">کتاب‌های</span>
               <span className="text-accent"> جدید</span>
             </h2>
-            <p className="mt-1 text-text-muted text-xs sm:text-sm max-w-xl">
+            <p className="mt-0.5 text-text-muted text-xs sm:text-sm max-w-xl leading-snug">
               آخرین کتاب‌های منتشر شده انتشارات الحان
             </p>
           </div>
@@ -223,7 +223,7 @@ function LatestBooks() {
           </Link>
         </div>
 
-        <div className="relative py-4">
+        <div className="relative py-2 sm:py-3">
           <button
             onClick={goForward}
             disabled={!canScrollForward}
