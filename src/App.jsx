@@ -36,6 +36,8 @@ import ProtectedUserRoute from "./components/ProtectedUserRoute";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import AdminOrders from "./pages/AdminOrders";
+import Orders from "./pages/Orders";
 
 // ✅ جدا کردن layout عمومی از ادمین
 function PublicLayout({ children }) {
@@ -88,6 +90,7 @@ function App() {
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/account" element={<PublicLayout><ProtectedUserRoute><Account /></ProtectedUserRoute></PublicLayout>} />
         <Route path="/favorites" element={<PublicLayout><ProtectedUserRoute><Favorites /></ProtectedUserRoute></PublicLayout>} />
+        <Route path="/orders" element={<PublicLayout><ProtectedUserRoute><Orders /></ProtectedUserRoute></PublicLayout>} />
         <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
         <Route path="/checkout" element={<PublicLayout><ProtectedUserRoute><Checkout /></ProtectedUserRoute></PublicLayout>} />
         <Route path="/order-confirmation/:id" element={<PublicLayout><ProtectedUserRoute><OrderConfirmation /></ProtectedUserRoute></PublicLayout>} />
@@ -102,6 +105,7 @@ function App() {
         <Route path="/admin/books/edit/:id" element={<ProtectedAdminLayout><EditBook /></ProtectedAdminLayout>} />
         <Route path="/admin/messages" element={<ProtectedAdminLayout><AdminMessages /></ProtectedAdminLayout>} />
         <Route path="/admin/reviews" element={<ProtectedAdminLayout><AdminReviews /></ProtectedAdminLayout>} />
+        <Route path="/admin/orders" element={<ProtectedAdminLayout><AdminOrders /></ProtectedAdminLayout>} />
         <Route path="/admin/submissions" element={<ProtectedAdminLayout><AdminSubmissions /></ProtectedAdminLayout>} />
         <Route path="/admin/settings" element={<ProtectedAdminLayout><AdminSettings /></ProtectedAdminLayout>} />
         <Route path="/admin/users" element={<ProtectedAdminLayout><AdminUsers /></ProtectedAdminLayout>} />

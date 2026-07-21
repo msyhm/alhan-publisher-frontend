@@ -7,14 +7,15 @@ import { clearAdminSession } from "../ProtectedRoute";
 import Icon from "../ui/Icon";
 
 const NAV_ITEMS = [
-  { to: "/admin",             label: "داشبورد",        icon: "home",     end: true  },
-  { to: "/admin/books",       label: "مدیریت کتاب‌ها",  icon: "books"              },
+  { to: "/admin",             label: "داشبورد",         icon: "home",     end: true  },
+  { to: "/admin/books",       label: "مدیریت کتاب‌ها",  icon: "books"                },
   { to: "/admin/messages",    label: "پیام‌ها",          icon: "envelope", badge: true},
   { to: "/admin/reviews",     label: "نظرات",           icon: "reviews"           },  
   { to: "/admin/submissions", label: "آثار ارسالی",     icon: "document"           },
-  { to: "/admin/users",       label: "نویسندگان",        icon: "user"               },
+  { to: "/admin/orders",      label: "سفارش‌ها",         icon: "orders" },
+  { to: "/admin/users",       label: "نویسندگان",       icon: "user"               },
   { to: "/admin/reports",     label: "گزارش آماری",     icon: "chart"              },
-  { to: "/admin/settings",    label: "تنظیمات",          icon: "settings"           },
+  { to: "/admin/settings",    label: "تنظیمات",         icon: "settings"           },
 ];
 
 // ─── NavItem ────────────────────────────────────────────────────────────────
