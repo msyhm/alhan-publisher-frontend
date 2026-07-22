@@ -205,18 +205,30 @@ function LatestBooks() {
                 {totalItems} کتاب
               </span>
             </div>
-            <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
-              <span className="text-primary">کتاب‌های</span>
-              <span className="text-accent"> جدید</span>
-            </h2>
+
+            {/* عنوان + دکمه (فقط موبایل) هم‌ردیف */}
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
+                <span className="text-primary">کتاب‌های</span>
+                <span className="text-accent"> جدید</span>
+              </h2>
+              <Link
+                to="/books"
+                className="sm:hidden shrink-0 text-xs text-primary font-bold border-2 border-primary px-3 py-1.5 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95"
+              >
+                همه کتاب‌ها
+              </Link>
+            </div>
+
             <p className="mt-0.5 text-text-muted text-xs sm:text-sm max-w-xl leading-snug">
               آخرین کتاب‌های منتشر شده انتشارات الحان
             </p>
           </div>
 
+          {/* دکمه دسکتاپ — همون جای قبلی، ته‌تراز با کل بلوک */}
           <Link
             to="/books"
-            className="inline-block mt-2 sm:mt-0 sm:self-end shrink-0 text-xs sm:text-sm text-primary font-bold border-2 border-primary px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
+            className="hidden sm:inline-block shrink-0 text-sm text-primary font-bold border-2 border-primary px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
           >
             همه کتاب‌ها
           </Link>
