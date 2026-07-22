@@ -195,7 +195,7 @@ function LatestBooks() {
   return (
     <section className="pt-4 sm:pt-6 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-background to-background/95">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="sm:flex sm:items-end sm:justify-between sm:gap-4 mb-4 sm:mb-6">
+        <div className="sm:flex sm:items-end sm:justify-between sm:gap-4 mb-2 sm:mb-3">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-primary/5 px-3 py-1 rounded-full text-primary text-xs sm:text-sm mb-1.5 border border-primary/10 backdrop-blur-sm">
               <BookOpenIcon />
@@ -234,7 +234,7 @@ function LatestBooks() {
           </Link>
         </div>
 
-        <div className="relative py-2 sm:py-3">
+        <div className="relative py-1 sm:py-1.5">
           <button
             onClick={goForward}
             disabled={!canScrollForward}

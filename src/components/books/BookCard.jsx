@@ -96,7 +96,7 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
         </div>
 
         {/* ===== محتوا ===== */}
-        <div className="p-2.5 sm:p-3 flex flex-col flex-1">
+        <div className="p-3 sm:p-4 flex flex-col flex-1">
 
           {/* عنوان */}
           <h3 className="text-sm sm:text-base font-bold text-primary leading-snug group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
