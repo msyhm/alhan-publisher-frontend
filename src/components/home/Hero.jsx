@@ -51,8 +51,8 @@ function Hero() {
     dragRef.current.active = false;
     isPausedRef.current = false;
     if (!hasMultiple || Math.abs(delta) < DRAG_THRESHOLD) return;
-    // در متن راست‌به‌چپ، کشیدن به سمت چپ = رفتن به اسلاید بعدی
-    if (delta < 0) goNext();
+    // کشیدن به سمت راست = اسلاید بعدی، کشیدن به سمت چپ = اسلاید قبلی
+    if (delta > 0) goNext();
     else goPrev();
   }, [hasMultiple, goNext, goPrev]);
 
@@ -99,7 +99,7 @@ function Hero() {
                 src={slide.image}
                 alt=""
                 draggable={false}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${isActive ? "animate-hero-kenburns" : ""}`}
               />
             );
             const content = slide.link ? (
@@ -125,11 +125,11 @@ function Hero() {
             return (
               <div
                 key={slide.id}
-                className="absolute inset-0"
+                className="absolute inset-0 overflow-hidden"
                 style={{
                   opacity: isActive ? 1 : 0,
-                  transform: isActive ? "scale(1)" : "scale(1.04)",
-                  transition: `opacity ${FADE_MS}ms ease, transform ${FADE_MS}ms ease`,
+                  transform: isActive ? "translateY(0)" : "translateY(8px)",
+                  transition: `opacity ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1), transform ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
                   pointerEvents: isActive ? "auto" : "none",
                   zIndex: isActive ? 1 : 0,
                 }}
