@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import useSiteSettings from "../../hooks/useSiteSettings";
 
 const AUTOPLAY_INTERVAL = 5000;
-const FADE_MS = 700;
+const FADE_MS = 420;
 const DRAG_THRESHOLD = 45; // حداقل جابه‌جایی (پیکسل) برای اینکه درگ به‌عنوان تغییر اسلاید حساب بشه
 
 function Hero() {
@@ -99,7 +99,7 @@ function Hero() {
                 src={slide.image}
                 alt=""
                 draggable={false}
-                className={`w-full h-full object-cover ${isActive ? "animate-hero-kenburns" : ""}`}
+                className="w-full h-full object-cover"
               />
             );
             const content = slide.link ? (
@@ -125,11 +125,10 @@ function Hero() {
             return (
               <div
                 key={slide.id}
-                className="absolute inset-0 overflow-hidden"
+                className="absolute inset-0"
                 style={{
                   opacity: isActive ? 1 : 0,
-                  transform: isActive ? "translateY(0)" : "translateY(8px)",
-                  transition: `opacity ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1), transform ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+                  transition: `opacity ${FADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
                   pointerEvents: isActive ? "auto" : "none",
                   zIndex: isActive ? 1 : 0,
                 }}
