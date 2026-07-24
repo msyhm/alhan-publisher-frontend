@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import Icon from "../ui/Icon";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
@@ -62,27 +61,6 @@ function BookCard({ book, aspectClass = "aspect-[2/3]" }) {
           {/* Overlay گرادینت */}
           <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* نشان‌ها */}
-          <div className="absolute top-3 right-3 flex flex-col gap-2">
-            {book.category && (
-              <span className="bg-accent/90 text-white backdrop-blur-sm shadow-lg text-xs px-2.5 py-1 rounded-full">
-                {book.category}
-              </span>
-            )}
-            {book.isAudio && (
-              <span className="bg-blue-500/90 text-white backdrop-blur-sm shadow-lg flex items-center gap-1 text-xs px-2.5 py-1 rounded-full">
-                <Icon name="headphones" size={12} strokeWidth={1.75} />
-                صوتی
-              </span>
-            )}
-          </div>
-
-          {/* ✅ badge چاپ — گوشه چپ بالا */}
-          {book.edition && (
-            <span className="absolute top-3 left-3 bg-white/90 text-primary backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-              چاپ {book.edition}
-            </span>
-          )}
           {/* ✅ دکمه افزودن سریع به سبد خرید */}
           <button
             onClick={handleAddToCart}
